@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Market</title>
+  <meta name="description" content="המוצרים הכי שווים מאלי אקספרס – נבחרו אחד־אחד, במחירים שאי אפשר לפספס">
+  <link rel="icon" href="img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="topbar">🔥 מבצעים חדשים עולים כל שבוע · <a href="#join">הצטרפו לרשימה וקבלו אותם ראשונים</a></div>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="#" class="brand" id="brand" aria-label="דף הבית">
+        <img src="img/mark.png" alt="" class="brand-mark">
+        <span class="brand-text"><b id="brandName"></b><small>AliExpress Deals</small></span>
+      </a>
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="search" placeholder="מה בא לכם לקנות היום?" autocomplete="off" aria-label="חיפוש מוצר">
+      </label>
+      <a href="#contact" class="header-cta">בקשת מוצר</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <span class="dia d1"></span><span class="dia d2"></span><span class="dia d3"></span><span class="dia d4"></span>
+    <div class="wrap hero-inner">
+      <div class="hero-text">
+        <span class="eyebrow">הדילים הכי שווים מ־AliExpress</span>
+        <h1>קונים חכם.<br><em>משלמים פחות.</em></h1>
+        <p id="tagline"></p>
+        <div class="hero-actions">
+          <a href="#shop" class="btn btn-lg">לכל המוצרים ←</a>
+          <a href="#contact" class="btn btn-lg btn-ghost">מחפשים משהו מסוים?</a>
+        </div>
+        <ul class="hero-stats">
+          <li><b id="statCount">0</b><span>מוצרים נבחרים</span></li>
+          <li><b>✓</b><span>נבדק לפני שעולה</span></li>
+          <li><b>🛡</b><span>קנייה מאובטחת באלי</span></li>
+        </ul>
+      </div>
+      <div class="hero-visual" id="heroVisual" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="perks wrap">
+    <div class="perk"><span>💎</span><div><b>רק מה ששווה</b><small>כל מוצר נבחר ידנית לפי איכות ודירוג</small></div></div>
+    <div class="perk"><span>💸</span><div><b>המחיר הכי טוב</b><small>משווים מוכרים כדי שלא תצטרכו</small></div></div>
+    <div class="perk"><span>📦</span><div><b>משלוח עד הבית</b><small>רוכשים ישירות באלי אקספרס בביטחון</small></div></div>
+  </section>
+
+  <section class="wrap" id="shop">
+    <div class="section-head">
+      <h2>קנו לפי קטגוריה</h2>
+    </div>
+    <nav class="cats" id="cats" aria-label="קטגוריות"></nav>
+
+    <div class="section-head products-head">
+      <h2 id="gridTitle">כל המוצרים</h2>
+      <div class="tools">
+        <span class="result-count" id="resultCount"></span>
+        <select id="sort" aria-label="מיון">
+          <option value="">מומלץ</option>
+          <option value="asc">מחיר: מהנמוך לגבוה</option>
+          <option value="desc">מחיר: מהגבוה לנמוך</option>
+          <option value="sale">הנחות גדולות</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" hidden>
+      <div class="empty-icon">🔍</div>
+      <p>לא מצאנו את זה… עדיין!</p>
+      <a href="#contact" class="btn">שלחו בקשה ואמצא לכם</a>
+    </div>
+  </section>
+
+  <section class="join" id="join">
+    <div class="wrap join-inner">
+      <div>
+        <h2>אל תפספסו את הדיל הבא 🔥</h2>
+        <p>הצטרפו לרשימת התפוצה וקבלו את המבצעים החמים ישר למייל. בלי ספאם, מבטיחים.</p>
+      </div>
+      <form id="newsletterForm" class="join-form" novalidate>
+        <input type="text" name="name" placeholder="שם" autocomplete="name">
+        <input type="email" name="email" placeholder="האימייל שלכם" required autocomplete="email">
+        <button type="submit" class="btn btn-dark">הצטרפות</button>
+        <p class="form-msg" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="wrap contact-inner">
+      <div class="contact-text">
+        <span class="eyebrow">בקשת מוצר</span>
+        <h2>לא מצאתם? אני אמצא לכם.</h2>
+        <p>ספרו לי מה אתם מחפשים – בגד, גאדג'ט, משהו לבית – ואחזור אליכם עם הדיל הכי שווה שמצאתי באלי אקספרס.</p>
+      </div>
+      <form class="panel" id="requestForm" novalidate>
+        <div class="two">
+          <input type="text" name="name" placeholder="שם" autocomplete="name">
+          <input type="email" name="email" placeholder="אימייל לחזרה" required autocomplete="email">
+        </div>
+        <textarea name="request" rows="4" placeholder="איזה מוצר אתם מחפשים? (אפשר גם להדביק קישור או לתאר)" required></textarea>
+        <button type="submit" class="btn btn-lg">שליחת בקשה</button>
+        <p class="form-msg" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <a href="#" class="brand brand-footer"><img src="img/mark.png" alt="" class="brand-mark"><b id="footerName"></b></a>
+      <p>© <span id="year"></span> · האתר מכיל קישורי שותפים לאלי אקספרס. רכישה דרכם לא מייקרת לכם כלום ועוזרת לנו להמשיך למצוא דילים.</p>
+    </div>
+  </footer>
+
+  <div class="preview" id="preview" aria-hidden="true"><img alt=""></div>
+
+  <script src="products.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

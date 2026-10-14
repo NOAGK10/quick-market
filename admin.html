@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ניהול מוצרים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="img/favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: var(--bg); }
+    .admin { padding: 28px 16px 80px; display: grid; gap: 20px; }
+    .box { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+    .box h2 { margin: 0 0 14px; font-size: 1.15rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .box h2::before { content: ""; width: 4px; height: 18px; border-radius: 2px; background: var(--orange); }
+    .admin-top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .admin-top h1 { margin: 0; font-size: 1.5rem; font-weight: 500; margin-inline-end: auto; }
+    .row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    label.f { display: flex; flex-direction: column; gap: 4px; font-size: .88rem; color: var(--grey); }
+    .f input, .f select {
+      font: inherit; color: var(--ink); background: var(--bg);
+      border: 1px solid var(--grey-light); border-radius: 10px; padding: 9px 12px; outline: none;
+    }
+    .f input:focus, .f select:focus { border-color: var(--orange); background: #fff; }
+    .btn { padding: 9px 18px; }
+    .btn.ghost, .btn.danger { box-shadow: none; }
+    .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--grey-light); }
+    .btn.ghost:hover { border-color: var(--ink); background: transparent; }
+    .btn.danger { background: transparent; color: #c0392b; border: 1px solid #f0c9c4; }
+    .btn.danger:hover { background: #fdecea; }
+    .btn.small { padding: 5px 12px; font-size: .85rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .img-pick { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: start; }
+    .img-preview { width: 120px; height: 120px; border-radius: 12px; background: var(--bg); object-fit: cover; border: 1px dashed var(--grey-light); }
+    .or { font-size: .8rem; color: var(--grey); margin: 6px 0; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border-radius: 999px; padding: 5px 8px 5px 12px; font-size: .9rem; }
+    .chip button { border: 0; background: none; cursor: pointer; color: var(--grey); font-size: 1rem; line-height: 1; padding: 2px 4px; }
+    .chip button:hover { color: #c0392b; }
+    .plist { display: grid; gap: 8px; }
+    .pitem { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 8px; border-radius: 12px; border: 1px solid var(--grey-light); }
+    .pitem img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; background: var(--bg); }
+    .pitem .t { font-weight: 500; font-size: .95rem; }
+    .pitem .s { font-size: .8rem; color: var(--grey); overflow-wrap: anywhere; }
+    .pitem .b { display: flex; gap: 6px; }
+    .note { background: var(--orange-soft); border-radius: 12px; padding: 12px 14px; font-size: .9rem; line-height: 1.6; }
+    .note code { background: #fff; padding: 1px 6px; border-radius: 4px; }
+    .dirty { color: var(--orange); font-size: .85rem; font-weight: 500; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
+    .toast.show { opacity: 1; }
+    @media (max-width: 600px) {
+      .pitem { grid-template-columns: 48px 1fr; }
+      .pitem .b { grid-column: 1 / -1; }
+      .img-pick { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap admin">
+
+    <div class="admin-top">
+      <img src="img/mark.png" alt="" style="height:42px">
+      <h1>ניהול מוצרים</h1>
+      <span class="dirty" id="dirty" hidden>● יש שינויים שלא הורדו</span>
+      <a class="btn ghost" href="index.html" target="_blank">צפייה באתר</a>
+      <button class="btn" id="exportBtn">⬇ הורדת products.js</button>
+    </div>
+
+    <div class="note">
+      <b>איך זה עובד:</b> מוסיפים / עורכים מוצרים כאן ← לוחצים <b>"הורדת products.js"</b> ← מחליפים את הקובץ
+      <code>products.js</code> בתיקיית האתר (ומעלים לאחסון). השינויים נשמרים בינתיים בדפדפן הזה, אז אפשר לסגור ולחזור.
+    </div>
+
+    <!-- Product form -->
+    <form class="box" id="pForm">
+      <h2 id="pFormTitle">הוספת מוצר</h2>
+      <div class="row">
+        <label class="f">שם המוצר *<input name="title" required></label>
+        <label class="f">קטגוריה *<select name="category" id="pCat" required></select></label>
+        <label class="f">מחיר *<input name="price" placeholder="₪39" required></label>
+        <label class="f">מחיר לפני הנחה (לא חובה)<input name="oldPrice" placeholder="₪69"></label>
+        <label class="f">תגית (לא חובה)<select name="badge"><option value="">ללא</option><option>להיט</option><option>חדש</option><option>מבצע</option></select></label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <label class="f">קישור למוצר (קישור שותפים) *<input name="link" type="url" required placeholder="https://s.click.aliexpress.com/..." dir="ltr"></label>
+      </div>
+      <div class="img-pick" style="margin-top:12px">
+        <img class="img-preview" id="imgPreview" alt="">
+        <div>
+          <label class="f">קישור לתמונה<input name="image" id="imgUrl" placeholder="https://ae01.alicdn.com/..." dir="ltr"></label>
+          <p class="or">או</p>
+          <label class="f">העלאת תמונה מהמחשב<input type="file" id="imgFile" accept="image/*"></label>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="submit" id="pSubmit">הוספה</button>
+        <button class="btn ghost" type="button" id="pCancel" hidden>ביטול עריכה</button>
+      </div>
+    </form>
+
+    <!-- Products list -->
+    <section class="box">
+      <h2>מוצרים (<span id="pCount">0</span>)</h2>
+      <label class="f" style="margin-bottom:12px"><input id="pFilter" type="search" placeholder="סינון רשימה…"></label>
+      <div class="plist" id="plist"></div>
+    </section>
+
+    <!-- Categories -->
+    <section class="box">
+      <h2>קטגוריות</h2>
+      <div class="chips" id="chips"></div>
+      <form class="row" id="catForm" style="align-items:end">
+        <label class="f">קטגוריה חדשה<input name="name" placeholder="למשל: רכב" required></label>
+        <label class="f">אייקון (אימוג'י)<input name="icon" placeholder="🚗" maxlength="4"></label>
+        <div><button class="btn" type="submit">הוספת קטגוריה</button></div>
+      </form>
+    </section>
+
+    <!-- Site settings -->
+    <form class="box" id="siteForm">
+      <h2>הגדרות האתר</h2>
+      <div class="row">
+        <label class="f">שם האתר<input name="name"></label>
+        <label class="f">משפט פתיחה<input name="tagline"></label>
+        <label class="f">מייל לקבלת הרשמות ובקשות<input name="email" type="email" dir="ltr"></label>
+      </div>
+      <div class="actions">
+        <button class="btn" type="submit">שמירה</button>
+        <button class="btn danger" type="button" id="resetBtn">ביטול כל השינויים (חזרה לקובץ)</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="products.js"></script>
+  <script>
+  (() => {
+    const $ = (s) => document.querySelector(s);
+    const KEY = "aliSiteDraft_v1";
+    const esc = (s = "") => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    let data;
+    try { data = JSON.parse(localStorage.getItem(KEY)); } catch {}
+    if (!data) data = { site: { ...SITE }, categories: CATEGORIES.map((c) => ({ ...c })), products: PRODUCTS.map((p) => ({ ...p })) };
+
+    let editingId = null;
+
+    function save(dirty = true) {
+      try { localStorage.setItem(KEY, JSON.stringify(data)); }
+      catch { toast("⚠ הדפדפן מלא – כדאי להשתמש בקישורי תמונה במקום העלאה"); }
+      $("#dirty").hidden = !dirty;
+    }
+    function toast(t) {
+      const el = $("#toast"); el.textContent = t; el.classList.add("show");
+      clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 2200);
+    }
+    const catName = (id) => (data.categories.find((c) => c.id === id) || {}).name || "—";
+
+    /* ---------- render ---------- */
+    function renderCats() {
+      $("#pCat").innerHTML = data.categories.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+      $("#chips").innerHTML = data.categories.map((c) =>
+        `<span class="chip">${esc(c.icon || "")} ${esc(c.name)} <small style="color:var(--grey)">(${data.products.filter((p) => p.category === c.id).length})</small><button type="button" data-del-cat="${esc(c.id)}" title="מחיקה">×</button></span>`).join("");
+    }
+    function renderList() {
+      const q = $("#pFilter").value.trim().toLowerCase();
+      const list = data.products.filter((p) => !q || (p.title + catName(p.category)).toLowerCase().includes(q));
+      $("#pCount").textContent = data.products.length;
+      $("#plist").innerHTML = list.map((p) => `
+        <div class="pitem">
+          <img src="${esc(p.image)}" alt="">
+          <div><div class="t">${esc(p.title)}</div><div class="s">${esc(catName(p.category))}${p.price ? " · " + esc(p.price) : ""}${p.oldPrice ? " (במקום " + esc(p.oldPrice) + ")" : ""}${p.badge ? " · " + esc(p.badge) : ""} · <span dir="ltr">${esc(p.link)}</span></div></div>
+          <div class="b">
+            <button class="btn ghost small" data-up="${p.id}" title="הזזה למעלה">↑</button>
+            <button class="btn ghost small" data-edit="${p.id}">עריכה</button>
+            <button class="btn danger small" data-del="${p.id}">מחיקה</button>
+          </div>
+        </div>`).join("") || `<p style="color:var(--grey)">אין מוצרים עדיין</p>`;
+    }
+    function renderSite() {
+      const f = $("#siteForm");
+      f.elements.name.value = data.site.name || ""; f.elements.tagline.value = data.site.tagline || ""; f.elements.email.value = data.site.email || "";
+    }
+
+    /* ---------- product form ---------- */
+    const pForm = $("#pForm");
+    const imgPrev = $("#imgPreview");
+    $("#imgUrl").addEventListener("input", (e) => (imgPrev.src = e.target.value));
+
+    // upload → shrink to max 800px JPEG and embed
+    $("#imgFile").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const img = new Image();
+      img.onload = () => {
+        const max = 800, s = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        const url = c.toDataURL("image/jpeg", 0.82);
+        $("#imgUrl").value = url; imgPrev.src = url;
+        URL.revokeObjectURL(img.src);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    function resetForm() {
+      editingId = null; pForm.reset(); imgPrev.removeAttribute("src");
+      $("#pFormTitle").textContent = "הוספת מוצר"; $("#pSubmit").textContent = "הוספה"; $("#pCancel").hidden = true;
+    }
+    $("#pCancel").addEventListener("click", resetForm);
+
+    pForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(pForm));
+      if (!f.image) { toast("חסרה תמונה – קישור או העלאה"); return; }
+      const item = { title: f.title.trim(), category: f.category, price: f.price.trim(), oldPrice: f.oldPrice.trim(), badge: f.badge, link: f.link.trim(), image: f.image.trim() };
+      if (editingId) {
+        Object.assign(data.products.find((p) => p.id === editingId), item);
+        toast("המוצר עודכן ✓");
+      } else {
+        data.products.unshift({ id: "p" + Date.now().toString(36), ...item });
+        toast("המוצר נוסף ✓");
+      }
+      save(); resetForm(); renderList(); renderCats();
+    });
+
+    $("#plist").addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const i = data.products.findIndex((p) => p.id === (b.dataset.edit || b.dataset.del || b.dataset.up));
+      if (i < 0) return;
+      const p = data.products[i];
+      if (b.dataset.del) {
+        if (!confirm(`למחוק את "${p.title}"?`)) return;
+        data.products.splice(i, 1); save(); renderList(); renderCats();
+      } else if (b.dataset.up) {
+        if (i === 0) return;
+        [data.products[i - 1], data.products[i]] = [data.products[i], data.products[i - 1]]; save(); renderList();
+      } else {
+        editingId = p.id;
+        pForm.elements.title.value = p.title; pForm.elements.category.value = p.category; pForm.elements.price.value = p.price || ""; pForm.elements.oldPrice.value = p.oldPrice || ""; pForm.elements.badge.value = p.badge || "";
+        pForm.elements.link.value = p.link; pForm.elements.image.value = p.image; imgPrev.src = p.image;
+        $("#pFormTitle").textContent = "עריכת מוצר"; $("#pSubmit").textContent = "שמירת שינויים"; $("#pCancel").hidden = false;
+        pForm.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+    $("#pFilter").addEventListener("input", renderList);
+
+    /* ---------- categories ---------- */
+    $("#catForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = e.target.elements.name.value.trim(); if (!name) return;
+      if (data.categories.some((c) => c.name === name)) { toast("הקטגוריה כבר קיימת"); return; }
+      data.categories.push({ id: "c" + Date.now().toString(36), name, icon: e.target.elements.icon.value.trim() || "🛍" });
+      e.target.reset(); save(); renderCats(); toast("קטגוריה נוספה ✓");
+    });
+    $("#chips").addEventListener("click", (e) => {
+      const id = e.target.dataset.delCat; if (!id) return;
+      const n = data.products.filter((p) => p.category === id).length;
+      if (n) { toast(`יש ${n} מוצרים בקטגוריה – קודם להעביר אותם`); return; }
+      data.categories = data.categories.filter((c) => c.id !== id); save(); renderCats();
+    });
+
+    /* ---------- site ---------- */
+    $("#siteForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.target;
+      data.site = { name: f.elements.name.value.trim(), tagline: f.elements.tagline.value.trim(), email: f.elements.email.value.trim() };
+      save(); toast("ההגדרות נשמרו ✓");
+    });
+    $("#resetBtn").addEventListener("click", () => {
+      if (!confirm("לבטל את כל השינויים שלא הורדו ולחזור לתוכן של products.js?")) return;
+      localStorage.removeItem(KEY); location.reload();
+    });
+
+    /* ---------- export ---------- */
+    $("#exportBtn").addEventListener("click", () => {
+      const j = (v) => JSON.stringify(v, null, 2);
+      const out =
+`/* =========================================================
+   קובץ הנתונים של האתר – נוצר אוטומטית מ-admin.html
+   ========================================================= */
+
+const SITE = ${j(data.site)};
+
+const CATEGORIES = ${j(data.categories)};
+
+const PRODUCTS = ${j(data.products)};
+`;
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([out], { type: "text/javascript;charset=utf-8" }));
+      a.download = "products.js"; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      $("#dirty").hidden = true;
+      toast("הקובץ הורד – החליפו אותו בתיקיית האתר");
+    });
+
+    renderCats(); renderList(); renderSite();
+    $("#dirty").hidden = !localStorage.getItem(KEY);
+  })();
+  </script>
+</body>
+</html>
