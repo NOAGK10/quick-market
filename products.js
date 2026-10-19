@@ -30,6 +30,9 @@ const CATEGORIES = [
   { "id": "sport", "name": "ספורט", "icon": "⚽" }
 ];
 
+// קופונים – מנוהלים מעמוד הניהול. שדות: code, title, expires (YYYY-MM-DD, לא חובה), link (לא חובה)
+const COUPONS = [];
+
 const PRODUCTS = [
   {
     "id": "p1",

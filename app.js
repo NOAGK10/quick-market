@@ -1,5 +1,5 @@
 // תוכן ברירת מחדל מ-products.js – משמש רק אם השרת לא זמין
-const FALLBACK = { site: SITE, categories: CATEGORIES, products: PRODUCTS };
+const FALLBACK = { site: SITE, categories: CATEGORIES, products: PRODUCTS, coupons: typeof COUPONS !== "undefined" ? COUPONS : [] };
 
 // המוצרים העדכניים נשמרים בשרת (Netlify) דרך עמוד הניהול
 async function loadData() {
@@ -15,7 +15,7 @@ async function loadData() {
 }
 
 (async () => {
-  const { site: SITE, categories: CATEGORIES, products: PRODUCTS } = await loadData();
+  const { site: SITE, categories: CATEGORIES, products: PRODUCTS, coupons: COUPON_LIST = [] } = await loadData();
   const $ = (s) => document.querySelector(s);
   const grid = $("#grid");
   const cats = $("#cats");
@@ -130,7 +130,10 @@ async function loadData() {
           <img src="${esc(p.image || PLACEHOLDER)}" alt="${esc(p.title)}" loading="lazy">
         </a>
         <div class="card-body">
-          <span class="card-tag">${esc(catName(p.category))}</span>
+          <div class="card-meta">
+            <span class="card-tag">${esc(catName(p.category))}</span>
+            <button type="button" class="report-btn" data-report="${esc(p.id)}" title="המחיר השתנה? המוצר ירד מהאתר? ספרו לנו">⚑ דיווח</button>
+          </div>
           <h3 class="card-title">${esc(p.title)}</h3>
           <div class="card-foot">
             <div class="prices">
@@ -260,6 +263,104 @@ async function loadData() {
   hookForm($("#newsletterForm"), `הרשמה חדשה לרשימת התפוצה – ${SITE.name}`, ["email"]);
   hookForm($("#requestForm"), `בקשת מוצר חדשה – ${SITE.name}`, ["email", "request"]);
 
+  /* ---------- Coupons ---------- */
+  function renderCoupons() {
+    const today = new Date().toISOString().slice(0, 10);
+    const list = COUPON_LIST.filter((c) => c.code && (!c.expires || c.expires >= today));
+    $("#coupons").hidden = !list.length;
+    const fmt = (d) => d.split("-").reverse().join(".");
+    $("#couponList").innerHTML = list
+      .map(
+        (c) => `
+      <div class="coupon">
+        <div class="coupon-info">
+          <span class="coupon-title">${esc(c.title || "קופון הנחה")}</span>
+          <span class="coupon-meta">
+            ${c.expires ? `<span>בתוקף עד ${esc(fmt(c.expires))}</span>` : ""}
+            ${c.link ? `<a href="${esc(c.link)}" target="_blank" rel="nofollow sponsored noopener">למבצע ←</a>` : ""}
+          </span>
+        </div>
+        <div class="coupon-code">
+          <code>${esc(c.code)}</code>
+          <button type="button" class="copy-btn" data-code="${esc(c.code)}">העתקה</button>
+        </div>
+      </div>`
+      )
+      .join("");
+  }
+  $("#couponList").addEventListener("click", async (e) => {
+    const b = e.target.closest(".copy-btn");
+    if (!b) return;
+    try {
+      await navigator.clipboard.writeText(b.dataset.code);
+    } catch {
+      // fallback: select the code so the visitor can copy it
+      const r = document.createRange();
+      r.selectNodeContents(b.previousElementSibling);
+      const sel = getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+      return;
+    }
+    b.textContent = "הועתק ✓";
+    b.classList.add("done");
+    setTimeout(() => ((b.textContent = "העתקה"), b.classList.remove("done")), 1800);
+  });
+
+  /* ---------- Report a product ---------- */
+  const dlg = $("#reportDlg");
+  const reportForm = $("#reportForm");
+  const reportMsg = reportForm.querySelector(".form-msg");
+  let reporting = null;
+
+  grid.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-report]");
+    if (!b) return;
+    reporting = PRODUCTS.find((p) => p.id === b.dataset.report);
+    if (!reporting) return;
+    hidePreview();
+    reportForm.reset();
+    reportMsg.textContent = "";
+    reportMsg.className = "form-msg";
+    reportForm.querySelector("button[type=submit]").disabled = false;
+    $("#reportProduct").textContent = reporting.title;
+    dlg.showModal();
+  });
+  $("#reportCancel").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", (e) => {
+    if (e.target === dlg) dlg.close(); // click on the dimmed background
+  });
+
+  reportForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(reportForm));
+    reportMsg.className = "form-msg";
+    if (!data.reason) {
+      reportMsg.textContent = "בחרו מה הבעיה";
+      reportMsg.classList.add("err");
+      return;
+    }
+    const btn = reportForm.querySelector("button[type=submit]");
+    btn.disabled = true;
+    reportMsg.textContent = "שולח…";
+    try {
+      const res = await fetch("/api/reports", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...data, productId: reporting.id, productTitle: reporting.title }),
+      });
+      if (!res.ok) throw new Error(res.status);
+      reportMsg.textContent = "תודה! נבדוק ונעדכן בהקדם 🧡";
+      reportMsg.classList.add("ok");
+      setTimeout(() => dlg.close(), 1600);
+    } catch {
+      reportMsg.textContent = "השליחה לא הצליחה, נסו שוב בעוד רגע";
+      reportMsg.classList.add("err");
+      btn.disabled = false;
+    }
+  });
+
+  renderCoupons();
   renderCats();
   renderGrid();
 })();

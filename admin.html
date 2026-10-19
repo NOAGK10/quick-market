@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="icon" href="img/favicon.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
   <style>
     body { background: var(--bg); }
     .admin { padding: 28px 16px 80px; display: grid; gap: 20px; }
@@ -60,6 +60,22 @@
     .status { font-size: .88rem; font-weight: 500; padding: 6px 12px; border-radius: 999px; background: #e8f7ee; color: #1e7a45; }
     .status.saving { background: var(--orange-soft); color: var(--orange-dark); }
     .status.error { background: #fdecea; color: #c0392b; cursor: pointer; }
+    .rlist, .clist { display: grid; gap: 8px; }
+    .ritem { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--grey-light); }
+    .ritem .t { font-weight: 500; }
+    .ritem .s { font-size: .82rem; color: var(--grey); }
+    .ritem .note { font-size: .88rem; margin-top: 2px; overflow-wrap: anywhere; }
+    .reason { display: inline-block; font-size: .75rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: #fdecea; color: #c0392b; margin-inline-end: 6px; }
+    .reason.price { background: var(--orange-soft); color: var(--orange-dark); }
+    .cnt { font-size: .8rem; font-weight: 700; background: #c0392b; color: #fff; border-radius: 999px; padding: 1px 9px; }
+    .cnt.zero { background: var(--grey-light); color: var(--grey); }
+    .citem { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--grey-light); }
+    .citem code { font-weight: 700; background: var(--orange-soft); color: var(--orange-dark); padding: 4px 10px; border-radius: 8px; direction: ltr; }
+    .citem .s { font-size: .82rem; color: var(--grey); }
+    .citem.expired { opacity: .55; }
+    .muted { color: var(--grey); margin: 0; }
+    .ritem .b, .citem .b { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    @media (max-width: 600px) { .ritem, .citem { grid-template-columns: 1fr; } .citem code { justify-self: start; } .ritem .b, .citem .b { justify-content: flex-start; } }
     .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
     .toast.show { opacity: 1; }
     @media (max-width: 600px) {
@@ -96,6 +112,13 @@
       אפשר לנהל מכל מחשב או טלפון, עם הסיסמה.
     </div>
 
+    <!-- Customer reports -->
+    <section class="box" id="reportsBox">
+      <h2>דיווחים מלקוחות <span class="cnt zero" id="rCount">0</span>
+        <button class="btn ghost small" type="button" id="rRefresh" style="margin-inline-start:auto">רענון</button></h2>
+      <div class="rlist" id="rlist"><p class="muted">טוען…</p></div>
+    </section>
+
     <!-- Product form -->
     <form class="box" id="pForm">
       <h2 id="pFormTitle">הוספת מוצר</h2>
@@ -130,6 +153,24 @@
       <div class="plist" id="plist"></div>
     </section>
 
+    <!-- Coupons -->
+    <section class="box">
+      <h2 id="cFormTitle">קופונים</h2>
+      <form id="cForm">
+        <div class="row">
+          <label class="f">קוד הקופון *<input name="code" required dir="ltr" placeholder="ILSAVE3"></label>
+          <label class="f">מה הוא נותן *<input name="title" required placeholder="₪3 הנחה בקנייה מעל ₪20"></label>
+          <label class="f">בתוקף עד (לא חובה)<input name="expires" type="date"></label>
+          <label class="f">קישור למבצע (לא חובה)<input name="link" type="url" dir="ltr" placeholder="https://s.click.aliexpress.com/..."></label>
+        </div>
+        <div class="actions">
+          <button class="btn" type="submit" id="cSubmit">הוספת קופון</button>
+          <button class="btn ghost" type="button" id="cCancel" hidden>ביטול עריכה</button>
+        </div>
+      </form>
+      <div class="clist" id="clist" style="margin-top:14px"></div>
+    </section>
+
     <!-- Categories -->
     <section class="box">
       <h2>קטגוריות</h2>
@@ -158,7 +199,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="products.js"></script>
+  <script src="products.js?v=4"></script>
   <script>
   (() => {
     const $ = (s) => document.querySelector(s);
@@ -214,9 +255,9 @@
       const res = await fetch("/api/products", { cache: "no-store" });
       if (!res.ok) throw new Error("load");
       const remote = await res.json();
-      if (remote && Array.isArray(remote.products) && Array.isArray(remote.categories)) return remote;
+      if (remote && Array.isArray(remote.products) && Array.isArray(remote.categories)) return { coupons: [], ...remote };
       // first run: start from the sample content in products.js
-      return { site: { ...SITE }, categories: CATEGORIES.map((c) => ({ ...c })), products: PRODUCTS.map((p) => ({ ...p })) };
+      return { site: { ...SITE }, categories: CATEGORIES.map((c) => ({ ...c })), products: PRODUCTS.map((p) => ({ ...p })), coupons: (typeof COUPONS !== "undefined" ? COUPONS : []).map((c) => ({ ...c })) };
     }
 
     const STATUS = { saved: "✓ נשמר – האתר מעודכן", saving: "⏳ שומר…", error: "⚠ השמירה נכשלה – לחצו לנסות שוב" };
@@ -240,7 +281,7 @@
         const res = await fetch("/api/products", {
           method: "PUT",
           headers: { "content-type": "application/json", ...authHeaders() },
-          body: JSON.stringify({ site: data.site, categories: data.categories, products: data.products }),
+          body: JSON.stringify({ site: data.site, categories: data.categories, products: data.products, coupons: data.coupons }),
         });
         if (res.status === 401) { setStatus("error"); showLogin("צריך להתחבר מחדש – השינויים יישמרו אחרי הכניסה"); return; }
         if (!res.ok) throw new Error("save");
@@ -422,8 +463,108 @@ const PRODUCTS = ${j(data.products)};
       try { data = await loadData(); }
       catch { showLogin("לא הצלחנו לטעון את המוצרים – רעננו את הדף"); return; }
       $("#login").hidden = true;
-      renderCats(); renderList(); renderSite(); setStatus("saved");
+      renderCats(); renderList(); renderSite(); renderCoupons(); setStatus("saved");
+      loadReports();
     }
+
+    /* ---------- coupons ---------- */
+    let editingCoupon = null;
+    const cForm = $("#cForm");
+    const today = () => new Date().toISOString().slice(0, 10);
+    function renderCoupons() {
+      const fmt = (d) => d.split("-").reverse().join(".");
+      $("#clist").innerHTML = data.coupons.map((c) => {
+        const expired = c.expires && c.expires < today();
+        return `<div class="citem${expired ? " expired" : ""}">
+          <code>${esc(c.code)}</code>
+          <div><div>${esc(c.title)}</div><div class="s">${c.expires ? (expired ? "פג תוקף – לא מוצג באתר" : "בתוקף עד " + esc(fmt(c.expires))) : "ללא תאריך תפוגה"}${c.link ? " · עם קישור" : ""}</div></div>
+          <div class="b">
+            <button class="btn ghost small" type="button" data-cedit="${esc(c.id)}">עריכה</button>
+            <button class="btn danger small" type="button" data-cdel="${esc(c.id)}">מחיקה</button>
+          </div>
+        </div>`;
+      }).join("") || `<p class="muted">אין קופונים עדיין. קופון שמוסיפים כאן מופיע באתר באזור "קופונים שווים".</p>`;
+    }
+    function resetCouponForm() {
+      editingCoupon = null; cForm.reset();
+      $("#cFormTitle").textContent = "קופונים"; $("#cSubmit").textContent = "הוספת קופון"; $("#cCancel").hidden = true;
+    }
+    $("#cCancel").addEventListener("click", resetCouponForm);
+    cForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(cForm));
+      const item = { code: f.code.trim(), title: f.title.trim(), expires: f.expires, link: f.link.trim() };
+      if (editingCoupon) {
+        Object.assign(data.coupons.find((c) => c.id === editingCoupon), item);
+        toast("הקופון עודכן ✓");
+      } else {
+        data.coupons.unshift({ id: "k" + Date.now().toString(36), ...item });
+        toast("הקופון נוסף ✓");
+      }
+      save(); resetCouponForm(); renderCoupons();
+    });
+    $("#clist").addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const c = data.coupons.find((x) => x.id === (b.dataset.cedit || b.dataset.cdel)); if (!c) return;
+      if (b.dataset.cdel) {
+        if (!confirm(`למחוק את הקופון ${c.code}?`)) return;
+        data.coupons = data.coupons.filter((x) => x !== c); save(); renderCoupons();
+      } else {
+        editingCoupon = c.id;
+        const el = cForm.elements;
+        el.code.value = c.code; el.title.value = c.title; el.expires.value = c.expires || ""; el.link.value = c.link || "";
+        $("#cFormTitle").textContent = "עריכת קופון"; $("#cSubmit").textContent = "שמירת שינויים"; $("#cCancel").hidden = false;
+        cForm.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+
+    /* ---------- customer reports ---------- */
+    const REASON = { price: "המחיר השתנה", gone: "לא זמין / ירד מהאתר", link: "הקישור לא עובד", other: "אחר" };
+    let reports = [];
+    async function loadReports() {
+      try {
+        const res = await fetch("/api/reports", { headers: authHeaders(), cache: "no-store" });
+        if (!res.ok) throw new Error();
+        reports = await res.json();
+        renderReports();
+      } catch {
+        $("#rlist").innerHTML = `<p class="muted">לא הצלחנו לטעון את הדיווחים – לחצו "רענון"</p>`;
+      }
+    }
+    function renderReports() {
+      const n = reports.length;
+      $("#rCount").textContent = n; $("#rCount").className = "cnt" + (n ? "" : " zero");
+      const when = (iso) => new Date(iso).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
+      $("#rlist").innerHTML = reports.map((r) => {
+        const exists = data.products.some((p) => p.id === r.productId);
+        return `<div class="ritem">
+          <div>
+            <div class="t"><span class="reason ${esc(r.reason)}">${esc(REASON[r.reason] || r.reason)}</span>${esc(r.productTitle)}</div>
+            ${r.note ? `<div class="note">"${esc(r.note)}"</div>` : ""}
+            <div class="s">${esc(when(r.at))}${exists ? "" : " · המוצר כבר לא באתר"}</div>
+          </div>
+          <div class="b">
+            ${exists ? `<button class="btn ghost small" type="button" data-redit="${esc(r.productId)}">עריכת המוצר</button>` : ""}
+            <button class="btn small" type="button" data-rdone="${esc(r.id)}">טופל ✓</button>
+          </div>
+        </div>`;
+      }).join("") || `<p class="muted">אין דיווחים חדשים 🎉 כשלקוח ילחץ "דיווח" ליד מוצר, זה יופיע כאן.</p>`;
+    }
+    $("#rRefresh").addEventListener("click", loadReports);
+    $("#rlist").addEventListener("click", async (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.redit) {
+        const btn = document.querySelector(`[data-edit="${CSS.escape(b.dataset.redit)}"]`);
+        if (btn) btn.click();
+      } else if (b.dataset.rdone) {
+        b.disabled = true;
+        try {
+          const res = await fetch("/api/reports/" + encodeURIComponent(b.dataset.rdone), { method: "DELETE", headers: authHeaders() });
+          if (!res.ok) throw new Error();
+          reports = reports.filter((r) => r.id !== b.dataset.rdone); renderReports();
+        } catch { b.disabled = false; toast("לא הצלחנו לעדכן, נסו שוב"); }
+      }
+    });
 
     // auto-login with a remembered password
     (async () => {

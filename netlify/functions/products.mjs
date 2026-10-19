@@ -27,12 +27,12 @@ export default async (req) => {
     } catch {
       return json({ error: "bad-json" }, 400);
     }
-    const { site, categories, products } = body || {};
-    if (!site || typeof site !== "object" || !Array.isArray(categories) || !Array.isArray(products)) {
+    const { site, categories, products, coupons = [] } = body || {};
+    if (!site || typeof site !== "object" || !Array.isArray(categories) || !Array.isArray(products) || !Array.isArray(coupons)) {
       return json({ error: "bad-data" }, 400);
     }
     const updatedAt = new Date().toISOString();
-    await store.setJSON("data", { site, categories, products, updatedAt });
+    await store.setJSON("data", { site, categories, products, coupons, updatedAt });
     return json({ ok: true, updatedAt });
   }
 

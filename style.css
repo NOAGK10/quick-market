@@ -287,6 +287,74 @@ img { max-width: 100%; }
 .brand-footer .brand-mark { height: 34px; }
 .brand-footer b { font-family: "Montserrat", sans-serif; color: #fff; letter-spacing: .06em; text-transform: uppercase; }
 
+/* ===== Coupons ===== */
+.coupons { padding-top: 56px; }
+.section-note { color: var(--grey); font-size: .92rem; }
+.coupon-list { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); }
+.coupon {
+  position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px;
+  background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 18px 20px; border-inline-start: 6px solid var(--orange); overflow: hidden;
+}
+.coupon-info { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.coupon-title { font-weight: 800; font-size: 1.08rem; line-height: 1.3; }
+.coupon-meta { font-size: .82rem; color: var(--grey); display: flex; gap: 10px; flex-wrap: wrap; }
+.coupon-meta a { color: var(--blue); font-weight: 500; }
+.coupon-code {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border-inline-start: 2px dashed var(--grey-light); padding-inline-start: 16px;
+}
+.coupon-code code {
+  font-family: "Montserrat", monospace; font-weight: 700; font-size: 1rem; letter-spacing: .06em;
+  background: var(--orange-soft); color: var(--orange-dark); padding: 6px 10px; border-radius: 8px; direction: ltr; user-select: all;
+}
+.copy-btn {
+  font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; border: 0; border-radius: 999px;
+  background: var(--graphite); color: #fff; padding: 6px 14px; transition: background .15s;
+}
+.copy-btn:hover { background: var(--orange-dark); }
+.copy-btn.done { background: #1e9e55; }
+
+/* ===== Disclaimer ===== */
+.disclaimer {
+  margin: -6px 0 18px; font-size: .85rem; color: var(--grey); line-height: 1.6;
+  background: var(--surface); border-radius: 12px; padding: 10px 14px; border: 1px solid var(--grey-light);
+}
+
+/* ===== Report ===== */
+.card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.report-btn {
+  font: inherit; font-size: .74rem; color: var(--grey); background: none; border: 0; cursor: pointer;
+  padding: 2px 6px; border-radius: 6px; transition: color .15s, background .15s;
+}
+.report-btn:hover, .report-btn:focus-visible { color: #c0392b; background: #fdecea; }
+.report {
+  border: 0; border-radius: 22px; padding: 0; width: min(420px, calc(100vw - 32px));
+  box-shadow: 0 30px 80px rgba(0,0,0,.3); color: var(--ink);
+}
+.report::backdrop { background: rgba(20,22,40,.55); backdrop-filter: blur(3px); }
+.report form { display: flex; flex-direction: column; gap: 12px; padding: 24px; }
+.report h3 { margin: 0; font-size: 1.25rem; font-weight: 800; }
+.report-product { margin: 0; color: var(--grey); font-size: .92rem; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  border: 1px solid var(--grey-light); border-radius: 12px; padding: 10px 12px; transition: border-color .15s, background .15s;
+}
+.opt:hover { border-color: var(--orange); }
+.opt:has(input:checked) { border-color: var(--orange); background: var(--orange-soft); }
+.opt input { accent-color: var(--orange); margin: 0; }
+.report textarea {
+  font: inherit; border: 1px solid var(--grey-light); border-radius: 12px; padding: 10px 12px; resize: vertical; outline: none;
+}
+.report textarea:focus { border-color: var(--orange); }
+.report-actions { display: flex; align-items: center; gap: 12px; }
+.btn-text { font: inherit; background: none; border: 0; color: var(--grey); cursor: pointer; padding: 8px; }
+.btn-text:hover { color: var(--ink); }
+.report .form-msg.ok { color: #1e7a45; }
+.report .form-msg.err { color: #c0392b; }
+.hp { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
+
 /* ===== Responsive ===== */
 @media (max-width: 960px) {
   .hero-inner { grid-template-columns: 1fr; }
@@ -311,6 +379,9 @@ img { max-width: 100%; }
   .perk { padding: 12px 14px; }
   .perk + .perk { border-inline-start: 0; border-top: 1px solid var(--grey-light); }
   #shop { padding-top: 40px; }
+  .coupons { padding-top: 40px; }
+  .coupon { padding: 14px 16px; }
+  .disclaimer { font-size: .8rem; }
   .section-head h2 { font-size: 1.4rem; }
   .cats { display: flex; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 4px 16px 10px; scroll-snap-type: x mandatory; }
   .cats::-webkit-scrollbar { display: none; }
