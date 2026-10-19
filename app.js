@@ -85,7 +85,7 @@ async function loadData() {
     cats.innerHTML = all
       .map(
         (c) => `<button type="button" class="cat${c.id === state.cat ? " active" : ""}" data-cat="${esc(c.id)}">
-          <span class="ic">${esc(c.icon || "🛍")}</span><span class="nm">${esc(c.name)}</span><span class="n">${c.n} מוצרים</span></button>`
+          <span class="ic" aria-hidden="true">${esc(c.icon || "🛍")}</span><span class="nm">${esc(c.name)}</span><span class="n">${c.n} מוצרים</span></button>`
       )
       .join("");
   }
@@ -228,6 +228,11 @@ async function loadData() {
       e.preventDefault();
       msg.className = "form-msg";
       const data = Object.fromEntries(new FormData(form));
+      if (form.elements.consent && !form.elements.consent.checked) {
+        msg.textContent = "כדי להצטרף, סמנו שאתם מאשרים קבלת דיוור";
+        msg.classList.add("err");
+        return;
+      }
       const missing = fields.find((f) => !String(data[f] || "").trim());
       if (missing || !/^\S+@\S+\.\S+$/.test(data.email)) {
         msg.textContent = "נא למלא אימייל תקין" + (fields.length > 1 ? " ותיאור של המוצר" : "");

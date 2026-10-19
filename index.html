@@ -17,9 +17,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
 
   <div class="topbar">🔥 מבצעים חדשים עולים כל שבוע · <a href="#join">הצטרפו לרשימה וקבלו אותם ראשונים</a></div>
 
@@ -37,6 +38,7 @@
     </div>
   </header>
 
+  <main id="main">
   <section class="hero">
     <span class="dia d1"></span><span class="dia d2"></span><span class="dia d3"></span><span class="dia d4"></span>
     <div class="wrap hero-inner">
@@ -59,9 +61,9 @@
   </section>
 
   <section class="perks wrap">
-    <div class="perk"><span>💎</span><div><b>רק מה ששווה</b><small>כל מוצר נבחר ידנית לפי איכות ודירוג</small></div></div>
-    <div class="perk"><span>💸</span><div><b>המחיר הכי טוב</b><small>משווים מחירים כדי שלא תצטרכו</small></div></div>
-    <div class="perk"><span>📦</span><div><b>משלוח עד הבית</b><small>רוכשים ישירות באלי אקספרס בביטחון</small></div></div>
+    <div class="perk"><span aria-hidden="true">💎</span><div><b>רק מה ששווה</b><small>כל מוצר נבחר ידנית לפי איכות ודירוג</small></div></div>
+    <div class="perk"><span aria-hidden="true">💸</span><div><b>המחיר הכי טוב</b><small>משווים מחירים כדי שלא תצטרכו</small></div></div>
+    <div class="perk"><span aria-hidden="true">📦</span><div><b>משלוח עד הבית</b><small>רוכשים ישירות באלי אקספרס בביטחון</small></div></div>
   </section>
 
   <section class="wrap coupons" id="coupons" hidden>
@@ -93,7 +95,7 @@
     <p class="disclaimer">ℹ️ המחירים באתר מתעדכנים מדי פעם, אבל באלי אקספרס הם יכולים להשתנות בכל רגע. המחיר הקובע הוא המחיר שמופיע באלי אקספרס בזמן הרכישה. ראיתם מחיר אחר? לחצו על "דיווח" ליד המוצר.</p>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty" hidden>
-      <div class="empty-icon">🔍</div>
+      <div class="empty-icon" aria-hidden="true">🔍</div>
       <p>לא מצאנו את זה… עדיין!</p>
       <a href="#contact" class="btn">שלחו בקשה ואמצא לכם</a>
     </div>
@@ -106,9 +108,11 @@
         <p>הצטרפו לרשימת התפוצה וקבלו את המבצעים החמים ישר למייל. בלי ספאם, מבטיחים.</p>
       </div>
       <form id="newsletterForm" class="join-form" novalidate>
-        <input type="text" name="name" placeholder="שם" autocomplete="name">
-        <input type="email" name="email" placeholder="האימייל שלכם" required autocomplete="email">
+        <input type="text" name="name" placeholder="שם" autocomplete="name" aria-label="שם">
+        <input type="email" name="email" placeholder="האימייל שלכם" required autocomplete="email" aria-label="אימייל">
         <button type="submit" class="btn btn-dark">הצטרפות</button>
+        <label class="consent"><input type="checkbox" name="consent" value="מאשר/ת קבלת דיוור" required>
+          <span>אני מאשר/ת לקבל מ־Quick Market דיוור עם דילים ומבצעים באימייל. אפשר להסיר את עצמכם בכל עת. <a href="privacy.html">מדיניות פרטיות</a></span></label>
         <p class="form-msg" role="status"></p>
       </form>
     </div>
@@ -123,21 +127,28 @@
       </div>
       <form class="panel" id="requestForm" novalidate>
         <div class="two">
-          <input type="text" name="name" placeholder="שם" autocomplete="name">
-          <input type="email" name="email" placeholder="אימייל לחזרה" required autocomplete="email">
+          <input type="text" name="name" placeholder="שם" autocomplete="name" aria-label="שם">
+          <input type="email" name="email" placeholder="אימייל לחזרה" required autocomplete="email" aria-label="אימייל לחזרה">
         </div>
-        <textarea name="request" rows="4" placeholder="איזה מוצר אתם מחפשים? (אפשר גם להדביק קישור או לתאר)" required></textarea>
+        <textarea name="request" rows="4" placeholder="איזה מוצר אתם מחפשים? (אפשר גם להדביק קישור או לתאר)" required aria-label="איזה מוצר אתם מחפשים"></textarea>
         <button type="submit" class="btn btn-lg">שליחת בקשה</button>
+        <p class="form-note">הפרטים ישמשו רק כדי לחזור אליכם. <a href="privacy.html">מדיניות פרטיות</a></p>
         <p class="form-msg" role="status"></p>
       </form>
     </div>
   </section>
+
+  </main>
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
       <a href="#" class="brand brand-footer"><img src="img/mark.png" alt="" class="brand-mark"><b id="footerName"></b></a>
       <p>© <span id="year"></span> · האתר מכיל קישורי שותפים לאלי אקספרס. רכישה דרכם לא מייקרת לכם כלום ועוזרת לנו להמשיך למצוא דילים.
         <br><b>גילוי נאות:</b> המחירים, המלאי והקופונים נקבעים על ידי אלי אקספרס והמוכרים ועשויים להשתנות. המחיר הקובע הוא המחיר באלי אקספרס בזמן הרכישה.</p>
+      <nav class="footer-links" aria-label="מידע משפטי">
+        <a href="privacy.html">מדיניות פרטיות</a>
+        <a href="accessibility.html">הצהרת נגישות</a>
+      </nav>
     </div>
   </footer>
 
@@ -147,13 +158,13 @@
     <form id="reportForm" novalidate>
       <h3 id="reportTitle">דיווח על מוצר</h3>
       <p class="report-product" id="reportProduct"></p>
-      <div class="opts">
+      <div class="opts" role="radiogroup" aria-label="מה הבעיה">
         <label class="opt"><input type="radio" name="reason" value="price"> המחיר השתנה</label>
         <label class="opt"><input type="radio" name="reason" value="gone"> המוצר לא זמין / ירד מהאתר</label>
         <label class="opt"><input type="radio" name="reason" value="link"> הקישור לא עובד</label>
         <label class="opt"><input type="radio" name="reason" value="other"> משהו אחר</label>
       </div>
-      <textarea name="note" rows="2" maxlength="500" placeholder="פרטים נוספים (לא חובה) – למשל מה המחיר עכשיו"></textarea>
+      <textarea name="note" rows="2" maxlength="500" placeholder="פרטים נוספים (לא חובה) – למשל מה המחיר עכשיו" aria-label="פרטים נוספים"></textarea>
       <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
       <div class="report-actions">
         <button type="submit" class="btn">שליחת דיווח</button>
@@ -163,7 +174,7 @@
     </form>
   </dialog>
 
-  <script src="products.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="products.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
