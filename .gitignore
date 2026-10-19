@@ -1,2 +1,4 @@
 .claude/
 *.zip
+node_modules/
+.netlify/

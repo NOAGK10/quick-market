@@ -1,4 +1,21 @@
-(() => {
+// תוכן ברירת מחדל מ-products.js – משמש רק אם השרת לא זמין
+const FALLBACK = { site: SITE, categories: CATEGORIES, products: PRODUCTS };
+
+// המוצרים העדכניים נשמרים בשרת (Netlify) דרך עמוד הניהול
+async function loadData() {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 4000);
+    const res = await fetch("/api/products", { cache: "no-store", signal: ctrl.signal });
+    clearTimeout(timer);
+    const data = res.ok ? await res.json() : null;
+    if (data && Array.isArray(data.products) && Array.isArray(data.categories)) return data;
+  } catch {}
+  return FALLBACK;
+}
+
+(async () => {
+  const { site: SITE, categories: CATEGORIES, products: PRODUCTS } = await loadData();
   const $ = (s) => document.querySelector(s);
   const grid = $("#grid");
   const cats = $("#cats");
