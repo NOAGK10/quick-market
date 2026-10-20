@@ -216,6 +216,8 @@ img { max-width: 100%; }
 .badge.hot { background: linear-gradient(135deg,#d0342c,#b3261e); }
 .badge.new { background: linear-gradient(135deg,#1f63c4,#174f9e); }
 .badge.sale { background: var(--orange-grad); color: var(--on-orange); }
+.badge.best { background: linear-gradient(135deg,#2c2f86,#1b1d57); }
+.badge.best::before { content: "★ "; color: #ffc27a; }
 .badge.off { background: var(--graphite); margin-inline-start: auto; }
 
 .card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }

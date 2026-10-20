@@ -53,7 +53,7 @@ async function loadData() {
     const now = num(p.price), was = num(p.oldPrice);
     return was > now && now > 0 ? Math.round((1 - now / was) * 100) : 0;
   };
-  const BADGE_CLASS = { "להיט": "hot", "חדש": "new", "מבצע": "sale" };
+  const BADGE_CLASS = { "להיט": "hot", "רב מכר": "best", "חדש": "new", "מבצע": "sale" };
 
   const PLACEHOLDER =
     "data:image/svg+xml;utf8," +
