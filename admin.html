@@ -40,6 +40,8 @@
     .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border-radius: 999px; padding: 5px 8px 5px 12px; font-size: .9rem; }
     .chip button { border: 0; background: none; cursor: pointer; color: var(--grey); font-size: 1rem; line-height: 1; padding: 2px 4px; }
     .chip button:hover { color: #c0392b; }
+    .chip button.ed:hover { color: var(--blue-text); }
+    .chip.editing { outline: 2px solid var(--orange); }
     .plist { display: grid; gap: 8px; }
     .pitem { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 8px; border-radius: 12px; border: 1px solid var(--grey-light); }
     .pitem img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; background: var(--bg); }
@@ -189,11 +191,15 @@
     <section class="box">
       <h2>קטגוריות</h2>
       <div class="chips" id="chips"></div>
+      <p class="muted" style="margin:0 0 10px">כדי לשנות קטגוריה קיימת (שם, אייקון או לאיזו קטגוריה היא שייכת) לחצו על ✎ שלידה.</p>
       <form class="row" id="catForm" style="align-items:end">
-        <label class="f">קטגוריה חדשה<input name="name" placeholder="למשל: רכב" required></label>
+        <label class="f"><span id="catNameLbl">קטגוריה חדשה</span><input name="name" placeholder="למשל: רכב" required></label>
         <label class="f">אייקון (אימוג'י)<input name="icon" placeholder="🚗" maxlength="4"></label>
         <label class="f">שייכת ל־<select name="parent" id="catParent"></select></label>
-        <div><button class="btn" type="submit">הוספת קטגוריה</button></div>
+        <div class="actions" style="margin:0">
+          <button class="btn" type="submit" id="catSubmit">הוספת קטגוריה</button>
+          <button class="btn ghost" type="button" id="catCancel" hidden>ביטול</button>
+        </div>
       </form>
     </section>
 
@@ -331,10 +337,12 @@
         subsOf(c.id).map((s) => `<option value="${esc(s.id)}">&nbsp;&nbsp;&nbsp;↳ ${esc(c.name)} › ${esc(s.name)}</option>`).join("")
       ).join("");
       if (keep && catById(keep)) $("#pCat").value = keep;
+      const keepParent = $("#catParent").value;
       $("#catParent").innerHTML = `<option value="">— קטגוריה ראשית —</option>` +
-        tops().map((c) => `<option value="${esc(c.id)}">תת־קטגוריה של ${esc(c.name)}</option>`).join("");
+        tops().filter((c) => c.id !== editingCat).map((c) => `<option value="${esc(c.id)}">תת־קטגוריה של ${esc(c.name)}</option>`).join("");
+      $("#catParent").value = keepParent && catById(keepParent) && keepParent !== editingCat ? keepParent : "";
       const n = (id) => data.products.filter((p) => p.category === id).length;
-      const chip = (c, sub) => `<span class="chip${sub ? " sub" : ""}">${sub ? "↳ " : esc(c.icon || "")} ${esc(c.name)} <small style="color:var(--grey)">(${n(c.id)})</small><button type="button" data-del-cat="${esc(c.id)}" title="מחיקה">×</button></span>`;
+      const chip = (c, sub) => `<span class="chip${sub ? " sub" : ""}">${sub ? "↳ " : esc(c.icon || "")} ${esc(c.name)} <small style="color:var(--grey)">(${n(c.id)})</small><button type="button" class="ed" data-edit-cat="${esc(c.id)}" title="עריכה" aria-label="עריכת ${esc(c.name)}">✎</button><button type="button" data-del-cat="${esc(c.id)}" title="מחיקה" aria-label="מחיקת ${esc(c.name)}">×</button></span>`;
       $("#chips").innerHTML = tops().map((c) => chip(c, false) + subsOf(c.id).map((s) => chip(s, true)).join("")).join("");
     }
     function renderList() {
@@ -473,17 +481,48 @@
     $("#pFilter").addEventListener("input", renderList);
 
     /* ---------- categories ---------- */
-    $("#catForm").addEventListener("submit", (e) => {
+    let editingCat = null;
+    const catForm = $("#catForm");
+    function resetCatForm() {
+      editingCat = null; catForm.reset();
+      $("#catNameLbl").textContent = "קטגוריה חדשה"; $("#catSubmit").textContent = "הוספת קטגוריה"; $("#catCancel").hidden = true;
+      renderCats();
+    }
+    $("#catCancel").addEventListener("click", resetCatForm);
+    catForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const name = e.target.elements.name.value.trim(); if (!name) return;
-      if (data.categories.some((c) => c.name === name)) { toast("הקטגוריה כבר קיימת"); return; }
-      const parent = e.target.elements.parent.value;
-      const cat = { id: "c" + Date.now().toString(36), name, icon: e.target.elements.icon.value.trim() || "🛍" };
-      if (parent) cat.parent = parent;
-      data.categories.push(cat);
-      e.target.reset(); save(); renderCats(); toast(parent ? "תת־קטגוריה נוספה ✓" : "קטגוריה נוספה ✓");
+      const el = catForm.elements;
+      const name = el.name.value.trim(); if (!name) return;
+      const parent = el.parent.value;
+      const icon = el.icon.value.trim() || "🛍";
+      if (data.categories.some((c) => c.name === name && (c.parent || "") === parent && c.id !== editingCat)) { toast("כבר יש קטגוריה בשם הזה באותו מקום"); return; }
+      if (editingCat) {
+        const cat = catById(editingCat);
+        if (parent && subsOf(editingCat).length) { toast("לקטגוריה הזו יש תתי־קטגוריות, ולכן היא חייבת להישאר ראשית"); return; }
+        cat.name = name; cat.icon = icon;
+        if (parent) cat.parent = parent; else delete cat.parent;
+        toast("הקטגוריה עודכנה ✓");
+      } else {
+        const cat = { id: "c" + Date.now().toString(36), name, icon };
+        if (parent) cat.parent = parent;
+        data.categories.push(cat);
+        toast(parent ? "תת־קטגוריה נוספה ✓" : "קטגוריה נוספה ✓");
+      }
+      save(); resetCatForm(); renderList();
     });
     $("#chips").addEventListener("click", (e) => {
+      const ed = e.target.dataset.editCat;
+      if (ed) {
+        const c = catById(ed); if (!c) return;
+        editingCat = ed;
+        renderCats();
+        const el = catForm.elements;
+        el.name.value = c.name; el.icon.value = c.icon || ""; el.parent.value = parentOf(ed) || "";
+        $("#catNameLbl").textContent = "שם הקטגוריה"; $("#catSubmit").textContent = "שמירת שינויים"; $("#catCancel").hidden = false;
+        e.target.closest(".chip") && document.querySelectorAll("#chips .chip").forEach((x) => x.classList.toggle("editing", x.contains(document.querySelector(`[data-edit-cat="${CSS.escape(ed)}"]`))));
+        el.name.focus();
+        return;
+      }
       const id = e.target.dataset.delCat; if (!id) return;
       const n = data.products.filter((p) => p.category === id).length;
       if (n) { toast(`יש ${n} מוצרים בקטגוריה – קודם להעביר אותם`); return; }
