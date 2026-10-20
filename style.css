@@ -200,13 +200,14 @@ img { max-width: 100%; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
 .card-media { position: relative; aspect-ratio: 1; background: var(--bg); overflow: hidden; display: block; }
+.media-link { display: block; width: 100%; height: 100%; }
 .card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2,.8,.2,1); }
 .card:hover .card-media img { transform: scale(1.07); }
 .card-media::after {
   content: "לצפייה במוצר ↗"; position: absolute; inset: auto 12px 12px 12px; text-align: center;
   background: rgba(28,29,36,.85); color: #fff; font-weight: 500; font-size: .9rem;
   padding: 9px; border-radius: 12px; backdrop-filter: blur(4px);
-  opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s;
+  opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s; pointer-events: none;
 }
 .card:hover .card-media::after { opacity: 1; transform: none; }
 
@@ -289,6 +290,34 @@ img { max-width: 100%; }
 .footer-inner p { margin: 0; max-width: 640px; }
 .brand-footer .brand-mark { height: 34px; }
 .brand-footer b { font-family: "Montserrat", sans-serif; color: #fff; letter-spacing: .06em; text-transform: uppercase; }
+
+/* ===== Sub-categories ===== */
+.subcats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.subcat {
+  font: inherit; font-size: .92rem; cursor: pointer; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--grey-light); border-radius: 999px; padding: 7px 16px;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.subcat:hover { border-color: var(--orange); }
+.subcat.active { background: var(--graphite); border-color: var(--graphite); color: #fff; }
+.subcat .n { font-size: .78rem; opacity: .7; margin-inline-start: 2px; }
+
+/* ===== Product image gallery ===== */
+.media-nav {
+  position: absolute; top: 50%; z-index: 3; width: 34px; height: 34px; margin-top: -17px;
+  display: grid; place-items: center; border: 0; border-radius: 50%; cursor: pointer;
+  background: rgba(255,255,255,.92); color: var(--ink); font-size: 1.4rem; line-height: 1;
+  box-shadow: 0 4px 12px rgba(0,0,0,.18); opacity: 0; transition: opacity .2s, transform .15s;
+}
+.media-nav.prev { right: 10px; }
+.media-nav.next { left: 10px; }
+.media-nav:hover { transform: scale(1.08); }
+.card:hover .media-nav, .media-nav:focus-visible { opacity: 1; }
+.dots { position: absolute; bottom: 10px; left: 0; right: 0; z-index: 2; display: flex; justify-content: center; gap: 5px; pointer-events: none; }
+.dots span { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.6); box-shadow: 0 0 0 1px rgba(0,0,0,.15); transition: width .2s, background .2s; }
+.dots span.on { width: 18px; border-radius: 4px; background: #fff; }
+.card:hover .card-media .dots { opacity: 0; } /* the "view product" strip takes their place */
+@media (hover: none) { .media-nav { opacity: .9; width: 30px; height: 30px; margin-top: -15px; font-size: 1.2rem; } }
 
 /* ===== Coupons ===== */
 .coupons { padding-top: 56px; }
@@ -418,6 +447,9 @@ img { max-width: 100%; }
   .cats { display: flex; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 4px 16px 10px; scroll-snap-type: x mandatory; }
   .cats::-webkit-scrollbar { display: none; }
   .cat { flex: 0 0 96px; padding: 12px 6px 10px; scroll-snap-align: start; }
+  .subcats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 10px -16px 0; padding: 2px 16px 6px; }
+  .subcats::-webkit-scrollbar { display: none; }
+  .subcat { flex-shrink: 0; }
   .cat .ic { width: 48px; height: 48px; font-size: 1.5rem; }
   .cat .nm { font-size: .88rem; }
   .products-head { margin-top: 28px; }

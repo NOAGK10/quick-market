@@ -29,6 +29,16 @@ async function loadData() {
 
   const catById = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
   const catName = (id) => (catById[id] || {}).name || "";
+  // subcategories: a category with a "parent" field lives under that parent
+  const parentOf = (id) => {
+    const c = catById[id];
+    return c && c.parent && catById[c.parent] ? c.parent : null;
+  };
+  const topCats = CATEGORIES.filter((c) => !parentOf(c.id));
+  const subsOf = (id) => CATEGORIES.filter((c) => parentOf(c.id) === id);
+  const fullCatName = (id) => (parentOf(id) ? `${catName(parentOf(id))} › ${catName(id)}` : catName(id));
+  const inCat = (p, id) => p.category === id || parentOf(p.category) === id;
+  const imagesOf = (p) => (Array.isArray(p.images) && p.images.length ? p.images : [p.image]).filter(Boolean);
   const state = {
     cat: new URLSearchParams(location.search).get("cat") || "all",
     q: "",
@@ -68,31 +78,46 @@ async function loadData() {
   );
 
   /* ---------- Hero collage (3 products, sales first) ---------- */
-  const heroPicks = [...PRODUCTS].filter((p) => p.image).sort((a, b) => discount(b) - discount(a)).slice(0, 3);
+  const heroPicks = [...PRODUCTS].filter((p) => imagesOf(p).length).sort((a, b) => discount(b) - discount(a)).slice(0, 3);
   $("#heroVisual").innerHTML = heroPicks
     .map(
       (p) => `<a class="hv-card" href="${esc(p.link)}" target="_blank" rel="nofollow sponsored noopener" tabindex="-1">
-        <img src="${esc(p.image)}" alt="">${p.price ? `<span class="tag">${esc(p.price)}</span>` : ""}</a>`
+        <img src="${esc(imagesOf(p)[0])}" alt="">${p.price ? `<span class="tag">${esc(p.price)}</span>` : ""}</a>`
     )
     .join("");
 
   /* ---------- Categories ---------- */
+  const count = (id) => PRODUCTS.filter((p) => inCat(p, id)).length;
   function renderCats() {
-    const counts = PRODUCTS.reduce((m, p) => ((m[p.category] = (m[p.category] || 0) + 1), m), {});
+    const activeTop = parentOf(state.cat) || state.cat;
     const all = [{ id: "all", name: "הכל", icon: "✨", n: PRODUCTS.length }].concat(
-      CATEGORIES.map((c) => ({ ...c, n: counts[c.id] || 0 }))
+      topCats.map((c) => ({ ...c, n: count(c.id) }))
     );
     cats.innerHTML = all
       .map(
-        (c) => `<button type="button" class="cat${c.id === state.cat ? " active" : ""}" data-cat="${esc(c.id)}">
+        (c) => `<button type="button" class="cat${c.id === activeTop ? " active" : ""}" data-cat="${esc(c.id)}" aria-pressed="${c.id === activeTop}">
           <span class="ic" aria-hidden="true">${esc(c.icon || "🛍")}</span><span class="nm">${esc(c.name)}</span><span class="n">${c.n} מוצרים</span></button>`
       )
       .join("");
+    // sub-category chips for the selected main category
+    const subs = activeTop === "all" ? [] : subsOf(activeTop);
+    const subBox = $("#subcats");
+    subBox.hidden = !subs.length;
+    subBox.innerHTML = subs.length
+      ? [{ id: activeTop, name: `הכל ב${catName(activeTop)}`, n: count(activeTop) }]
+          .concat(subs.map((c) => ({ ...c, n: count(c.id) })))
+          .map(
+            (c) => `<button type="button" class="subcat${c.id === state.cat ? " active" : ""}" data-cat="${esc(c.id)}" aria-pressed="${c.id === state.cat}">${esc(c.name)} <span class="n">${c.n}</span></button>`
+          )
+          .join("")
+      : "";
   }
-  cats.addEventListener("click", (e) => {
-    const b = e.target.closest(".cat");
-    if (b) setCat(b.dataset.cat);
-  });
+  [cats, $("#subcats")].forEach((el) =>
+    el.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-cat]");
+      if (b) setCat(b.dataset.cat);
+    })
+  );
   function setCat(id) {
     state.cat = id;
     const url = new URL(location.href);
@@ -108,9 +133,9 @@ async function loadData() {
   function filtered() {
     const words = norm(state.q).split(/\s+/).filter(Boolean);
     const list = PRODUCTS.filter((p) => {
-      if (state.cat !== "all" && p.category !== state.cat) return false;
+      if (state.cat !== "all" && !inCat(p, state.cat)) return false;
       if (!words.length) return true;
-      const hay = norm(`${p.title} ${catName(p.category)} ${p.badge || ""}`);
+      const hay = norm(`${p.title} ${fullCatName(p.category)} ${p.badge || ""}`);
       return words.every((w) => hay.includes(w));
     });
     if (state.sort === "asc") list.sort((a, b) => num(a.price) - num(b.price));
@@ -123,15 +148,23 @@ async function loadData() {
     const off = discount(p);
     const badge = p.badge ? `<span class="badge ${BADGE_CLASS[p.badge] || "sale"}">${esc(p.badge)}</span>` : "<span></span>";
     const offTag = off ? `<span class="badge off">‎-${off}%</span>` : "";
+    const imgs = imagesOf(p);
+    const many = imgs.length > 1;
     return `
-      <article class="card" style="animation-delay:${Math.min(i, 12) * 40}ms">
-        <a class="card-media" href="${esc(p.link)}" target="_blank" rel="nofollow sponsored noopener" data-img="${esc(p.image)}">
+      <article class="card" style="animation-delay:${Math.min(i, 12) * 40}ms" data-id="${esc(p.id)}" data-i="0">
+        <div class="card-media">
+          <a class="media-link" href="${esc(p.link)}" target="_blank" rel="nofollow sponsored noopener" data-img="${esc(imgs[0] || "")}">
+            <img src="${esc(imgs[0] || PLACEHOLDER)}" alt="${esc(p.title)}${many ? ` – תמונה 1 מתוך ${imgs.length}` : ""}" loading="lazy">
+          </a>
           <div class="badges">${badge}${offTag}</div>
-          <img src="${esc(p.image || PLACEHOLDER)}" alt="${esc(p.title)}" loading="lazy">
-        </a>
+          ${many ? `
+          <button type="button" class="media-nav prev" data-step="-1" aria-label="התמונה הקודמת">›</button>
+          <button type="button" class="media-nav next" data-step="1" aria-label="התמונה הבאה">‹</button>
+          <div class="dots" aria-hidden="true">${imgs.map((_, k) => `<span${k ? "" : ' class="on"'}></span>`).join("")}</div>` : ""}
+        </div>
         <div class="card-body">
           <div class="card-meta">
-            <span class="card-tag">${esc(catName(p.category))}</span>
+            <span class="card-tag">${esc(fullCatName(p.category))}</span>
             <button type="button" class="report-btn" data-report="${esc(p.id)}" title="המחיר השתנה? המוצר ירד מהאתר? ספרו לנו">⚑ דיווח</button>
           </div>
           <h3 class="card-title">${esc(p.title)}</h3>
@@ -140,7 +173,7 @@ async function loadData() {
               <span class="card-price">${esc(p.price || "")}</span>
               ${off ? `<span class="card-old">${esc(p.oldPrice)}</span>` : ""}
             </div>
-            <a class="card-btn" href="${esc(p.link)}" target="_blank" rel="nofollow sponsored noopener" data-img="${esc(p.image)}">לרכישה ←</a>
+            <a class="card-btn" href="${esc(p.link)}" target="_blank" rel="nofollow sponsored noopener">לרכישה ←</a>
           </div>
         </div>
       </article>`;
@@ -156,7 +189,7 @@ async function loadData() {
     empty.hidden = list.length > 0;
     gridTitle.textContent = state.q
       ? `תוצאות עבור "${state.q.trim()}"`
-      : state.cat === "all" ? "כל המוצרים" : catName(state.cat);
+      : state.cat === "all" ? "כל המוצרים" : fullCatName(state.cat);
     resultCount.textContent = `${list.length} מוצרים`;
   }
 
@@ -179,6 +212,40 @@ async function loadData() {
   sort.addEventListener("change", () => {
     state.sort = sort.value;
     renderGrid();
+  });
+
+  /* ---------- Product image gallery ---------- */
+  function showImage(card, step) {
+    const p = PRODUCTS.find((x) => x.id === card.dataset.id);
+    const imgs = p ? imagesOf(p) : [];
+    if (imgs.length < 2) return;
+    const i = (Number(card.dataset.i) + step + imgs.length) % imgs.length;
+    card.dataset.i = i;
+    const link = card.querySelector(".media-link");
+    const img = link.querySelector("img");
+    img.src = imgs[i];
+    img.alt = `${p.title} – תמונה ${i + 1} מתוך ${imgs.length}`;
+    link.dataset.img = imgs[i];
+    card.querySelectorAll(".dots span").forEach((d, k) => d.classList.toggle("on", k === i));
+    if (current === link) previewImg.src = imgs[i];
+  }
+  grid.addEventListener("click", (e) => {
+    const b = e.target.closest(".media-nav");
+    if (!b) return;
+    e.preventDefault();
+    showImage(b.closest(".card"), Number(b.dataset.step));
+  });
+  // swipe between images on touch screens
+  let touchX = null;
+  grid.addEventListener("touchstart", (e) => {
+    touchX = e.target.closest(".card-media") ? e.touches[0].clientX : null;
+  }, { passive: true });
+  grid.addEventListener("touchend", (e) => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    const card = e.target.closest(".card");
+    touchX = null;
+    if (card && Math.abs(dx) > 40) showImage(card, dx < 0 ? 1 : -1);
   });
 
   /* ---------- Big image on hover (desktop only) ---------- */
