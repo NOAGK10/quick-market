@@ -499,6 +499,62 @@ async function loadData() {
     }
   });
 
+  /* ---------- Quick search (speech-bubble button) ---------- */
+  const qsDlg = $("#qsDlg");
+  const qsInput = $("#qsInput");
+  const qsResults = $("#qsResults");
+  function quickSearch() {
+    const words = norm(qsInput.value).split(/\s+/).filter(Boolean);
+    if (!words.length) {
+      const tags = topCats.slice(0, 6).map((c) => `<button type="button" class="qs-tag" data-q="${esc(c.name)}">${esc(c.icon || "")} ${esc(c.name)}</button>`).join("");
+      qsResults.innerHTML = `<p class="qs-hint">כתבו מה אתם מחפשים, או בחרו קטגוריה:</p><div class="qs-tags">${tags}</div>`;
+      return;
+    }
+    const found = PRODUCTS.filter((p) => {
+      const hay = norm(`${p.title} ${fullCatName(p.category)} ${p.badge || ""}`);
+      return words.every((w) => hay.includes(w));
+    });
+    if (!found.length) {
+      qsResults.innerHTML = `<div class="qs-none"><p>לא מצאנו "${esc(qsInput.value.trim())}" 🙁</p><a href="#contact" class="btn" data-close>שלחו בקשה ואמצא לכם</a></div>`;
+      return;
+    }
+    qsResults.innerHTML =
+      `<p class="qs-hint">${found.length} מוצרים</p><ul class="qs-list">` +
+      found.slice(0, 8).map((p) => `
+        <li><a class="qs-item" href="${esc(p.link)}" target="_blank" rel="nofollow sponsored noopener">
+          <img src="${esc(imagesOf(p)[0] || PLACEHOLDER)}" alt="" loading="lazy">
+          <span class="qs-txt"><b>${esc(p.title)}</b><small>${esc(fullCatName(p.category))}</small></span>
+          <span class="qs-price">${esc(p.price || "")}</span>
+        </a></li>`).join("") +
+      `</ul>` +
+      (found.length > 8 ? `<button type="button" class="btn qs-all" id="qsAll">לכל ${found.length} התוצאות ←</button>` : `<button type="button" class="btn-text qs-all" id="qsAll">הצגת התוצאות בדף ←</button>`);
+  }
+  let qsT;
+  qsInput.addEventListener("input", () => { clearTimeout(qsT); qsT = setTimeout(quickSearch, 120); });
+  $("#qsOpen").addEventListener("click", () => {
+    qsInput.value = "";
+    quickSearch();
+    qsDlg.showModal();
+    qsInput.focus();
+  });
+  $("#qsClose").addEventListener("click", () => qsDlg.close());
+  qsDlg.addEventListener("click", (e) => {
+    if (e.target === qsDlg || e.target.closest("[data-close]")) return qsDlg.close();
+    const tag = e.target.closest(".qs-tag");
+    if (tag) { qsInput.value = tag.dataset.q; quickSearch(); qsInput.focus(); return; }
+    if (e.target.closest("#qsAll")) {
+      // show the same search in the main product grid
+      search.value = qsInput.value;
+      state.q = qsInput.value;
+      setCat("all");
+      qsDlg.close();
+      $("#gridTitle").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+  qsInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); const all = $("#qsAll"); if (all) all.click(); }
+  });
+
   renderReviews();
   renderCoupons();
   renderCats();
