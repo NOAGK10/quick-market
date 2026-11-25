@@ -456,8 +456,19 @@ async function loadData() {
       : `<div class="reviews-empty"><span aria-hidden="true">💬</span><p>עוד אין המלצות – קניתם דרכנו? היו הראשונים לספר איך היה!</p></div>`;
   }
 
+  const reviewDlg = $("#reviewDlg");
   const reviewForm = $("#reviewForm");
   const reviewMsg = reviewForm.querySelector(".form-msg");
+  $("#reviewOpen").addEventListener("click", () => {
+    reviewMsg.textContent = "";
+    reviewMsg.className = "form-msg";
+    reviewForm.querySelector("button[type=submit]").disabled = false;
+    reviewDlg.showModal();
+  });
+  $("#reviewCancel").addEventListener("click", () => reviewDlg.close());
+  reviewDlg.addEventListener("click", (e) => {
+    if (e.target === reviewDlg) reviewDlg.close(); // click on the dimmed background
+  });
   reviewForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(reviewForm));
@@ -480,7 +491,7 @@ async function loadData() {
       reviewMsg.textContent = "תודה רבה! ההמלצה תופיע באתר אחרי שנאשר אותה 🧡";
       reviewMsg.classList.add("ok");
       reviewForm.reset();
-      btn.disabled = false;
+      setTimeout(() => reviewDlg.close(), 2200);
     } catch {
       reviewMsg.textContent = "השליחה לא הצליחה, נסו שוב בעוד רגע";
       reviewMsg.classList.add("err");
