@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <a class="skip-link" href="#main">דילוג לתוכן</a>
@@ -102,6 +102,17 @@
     </div>
   </section>
 
+  <section class="reviews" id="reviews">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>מה הלקוחות אומרים</h2>
+        <button type="button" class="btn" id="reviewOpen">✍ כתבו המלצה</button>
+      </div>
+      <p class="reviews-summary" id="reviewsSummary" hidden></p>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+  </section>
+
   <section class="join" id="join">
     <div class="wrap join-inner">
       <div>
@@ -155,6 +166,31 @@
 
   <div class="preview" id="preview" aria-hidden="true"><img alt=""></div>
 
+  <dialog class="report" id="reviewDlg" aria-labelledby="reviewTitle">
+    <form id="reviewForm" novalidate>
+      <h3 id="reviewTitle">כתבו המלצה</h3>
+      <p class="report-product">קניתם דרכנו? ספרו לכולם איך היה. ההמלצה תופיע באתר אחרי אישור.</p>
+      <fieldset class="stars-field">
+        <legend>הדירוג שלכם</legend>
+        <div class="stars">
+          <input type="radio" name="rating" id="star5" value="5" checked><label for="star5" title="5 כוכבים"><span class="sr-only">5 כוכבים</span>★</label>
+          <input type="radio" name="rating" id="star4" value="4"><label for="star4" title="4 כוכבים"><span class="sr-only">4 כוכבים</span>★</label>
+          <input type="radio" name="rating" id="star3" value="3"><label for="star3" title="3 כוכבים"><span class="sr-only">3 כוכבים</span>★</label>
+          <input type="radio" name="rating" id="star2" value="2"><label for="star2" title="2 כוכבים"><span class="sr-only">2 כוכבים</span>★</label>
+          <input type="radio" name="rating" id="star1" value="1"><label for="star1" title="1 כוכבים"><span class="sr-only">1 כוכבים</span>★</label>
+        </div>
+      </fieldset>
+      <input type="text" name="name" maxlength="40" placeholder="השם שיופיע באתר (אפשר רק שם פרטי)" aria-label="השם שיופיע באתר" autocomplete="given-name">
+      <textarea name="text" rows="4" maxlength="600" placeholder="מה קניתם ואיך היה?" aria-label="ההמלצה שלכם"></textarea>
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="report-actions">
+        <button type="submit" class="btn">שליחת המלצה</button>
+        <button type="button" class="btn-text" id="reviewCancel">ביטול</button>
+      </div>
+      <p class="form-msg" role="status"></p>
+    </form>
+  </dialog>
+
   <dialog class="report" id="reportDlg" aria-labelledby="reportTitle">
     <form id="reportForm" novalidate>
       <h3 id="reportTitle">דיווח על מוצר</h3>
@@ -175,7 +211,7 @@
     </form>
   </dialog>
 
-  <script src="products.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="products.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

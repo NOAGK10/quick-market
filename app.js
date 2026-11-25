@@ -1,5 +1,5 @@
 // תוכן ברירת מחדל מ-products.js – משמש רק אם השרת לא זמין
-const FALLBACK = { site: SITE, categories: CATEGORIES, products: PRODUCTS, coupons: typeof COUPONS !== "undefined" ? COUPONS : [] };
+const FALLBACK = { site: SITE, categories: CATEGORIES, products: PRODUCTS, coupons: typeof COUPONS !== "undefined" ? COUPONS : [], reviews: [] };
 
 // המוצרים העדכניים נשמרים בשרת (Netlify) דרך עמוד הניהול
 async function loadData() {
@@ -15,7 +15,7 @@ async function loadData() {
 }
 
 (async () => {
-  const { site: SITE, categories: CATEGORIES, products: PRODUCTS, coupons: COUPON_LIST = [] } = await loadData();
+  const { site: SITE, categories: CATEGORIES, products: PRODUCTS, coupons: COUPON_LIST = [], reviews: REVIEWS = [] } = await loadData();
   const $ = (s) => document.querySelector(s);
   const grid = $("#grid");
   const cats = $("#cats");
@@ -53,7 +53,7 @@ async function loadData() {
     const now = num(p.price), was = num(p.oldPrice);
     return was > now && now > 0 ? Math.round((1 - now / was) * 100) : 0;
   };
-  const BADGE_CLASS = { "להיט": "hot", "רב מכר": "best", "חדש": "new", "מבצע": "sale" };
+  const BADGE_CLASS = { "מומלץ": "rec", "להיט": "hot", "רב מכר": "best", "חדש": "new", "מבצע": "sale" };
 
   const PLACEHOLDER =
     "data:image/svg+xml;utf8," +
@@ -432,6 +432,74 @@ async function loadData() {
     }
   });
 
+  /* ---------- Customer reviews ---------- */
+  function renderReviews() {
+    const list = REVIEWS.filter((r) => r && r.text);
+    const starsTxt = (n) => "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+    if (list.length) {
+      const avg = list.reduce((s, r) => s + (Number(r.rating) || 5), 0) / list.length;
+      $("#reviewsSummary").hidden = false;
+      $("#reviewsSummary").innerHTML = `<b>${avg.toFixed(1)}</b> <span class="stars-read" aria-hidden="true">${starsTxt(Math.round(avg))}</span> · ${list.length} המלצות`;
+    }
+    const when = (iso) => (iso ? new Date(iso).toLocaleDateString("he-IL", { month: "long", year: "numeric" }) : "");
+    $("#reviewList").innerHTML = list.length
+      ? list
+          .map(
+            (r) => `
+      <figure class="review">
+        <div class="stars-read" aria-label="${Number(r.rating) || 5} מתוך 5 כוכבים">${starsTxt(Number(r.rating) || 5)}</div>
+        <blockquote>${esc(r.text)}</blockquote>
+        <figcaption><span class="avatar" aria-hidden="true">${esc((r.name || "?").trim().charAt(0))}</span><span><b>${esc(r.name)}</b><small>${esc(when(r.at))}</small></span></figcaption>
+      </figure>`
+          )
+          .join("")
+      : `<div class="reviews-empty"><span aria-hidden="true">💬</span><p>עוד אין המלצות – קניתם דרכנו? היו הראשונים לספר איך היה!</p></div>`;
+  }
+
+  const reviewDlg = $("#reviewDlg");
+  const reviewForm = $("#reviewForm");
+  const reviewMsg = reviewForm.querySelector(".form-msg");
+  $("#reviewOpen").addEventListener("click", () => {
+    reviewMsg.textContent = "";
+    reviewMsg.className = "form-msg";
+    reviewForm.querySelector("button[type=submit]").disabled = false;
+    reviewDlg.showModal();
+  });
+  $("#reviewCancel").addEventListener("click", () => reviewDlg.close());
+  reviewDlg.addEventListener("click", (e) => {
+    if (e.target === reviewDlg) reviewDlg.close();
+  });
+  reviewForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(reviewForm));
+    reviewMsg.className = "form-msg";
+    if (!data.name.trim() || data.text.trim().length < 5) {
+      reviewMsg.textContent = "כתבו שם ולפחות כמה מילים על החוויה";
+      reviewMsg.classList.add("err");
+      return;
+    }
+    const btn = reviewForm.querySelector("button[type=submit]");
+    btn.disabled = true;
+    reviewMsg.textContent = "שולח…";
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(res.status);
+      reviewMsg.textContent = "תודה רבה! ההמלצה תופיע באתר אחרי שנאשר אותה 🧡";
+      reviewMsg.classList.add("ok");
+      reviewForm.reset();
+      setTimeout(() => reviewDlg.close(), 2200);
+    } catch {
+      reviewMsg.textContent = "השליחה לא הצליחה, נסו שוב בעוד רגע";
+      reviewMsg.classList.add("err");
+      btn.disabled = false;
+    }
+  });
+
+  renderReviews();
   renderCoupons();
   renderCats();
   renderGrid();
