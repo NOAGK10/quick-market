@@ -60,7 +60,7 @@ async function loadData() {
     encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#e9e9eb"/></svg>');
 
   /* ---------- Site texts ---------- */
-  document.title = `${SITE.name} | הדילים הכי שווים מאלי אקספרס`;
+  document.title = `${SITE.name} – דילים שווים מאלי אקספרס`;
   $("#brandName").textContent = SITE.name;
   $("#footerName").textContent = SITE.name;
   $("#year").textContent = new Date().getFullYear();
