@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
   <a class="skip-link" href="#main">דילוג לתוכן</a>
@@ -109,12 +109,6 @@
         <h2>מה הלקוחות אומרים</h2>
         <p class="reviews-summary" id="reviewsSummary" hidden></p>
       </div>
-      <div class="write-cta">
-        <button type="button" class="write-btn" id="reviewOpen" aria-haspopup="dialog">
-          <span class="write-circle" aria-hidden="true"><span class="write-emoji">✍️</span></span>
-          <span class="write-label">כתבו המלצה</span>
-        </button>
-      </div>
       <div class="review-list" id="reviewList"></div>
     </div>
   </section>
@@ -170,6 +164,11 @@
     </div>
   </footer>
 
+  <button type="button" class="write-btn write-float" id="reviewOpen" aria-haspopup="dialog">
+    <span class="write-circle" aria-hidden="true"><span class="write-emoji">✍️</span></span>
+    <span class="write-label">כתבו המלצה</span>
+  </button>
+
   <div class="preview" id="preview" aria-hidden="true"><img alt=""></div>
 
   <dialog class="report" id="reviewDlg" aria-labelledby="reviewTitle">
@@ -217,7 +216,7 @@
     </form>
   </dialog>
 
-  <script src="products.js?v=13"></script>
-  <script src="app.js?v=13"></script>
+  <script src="products.js?v=15"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

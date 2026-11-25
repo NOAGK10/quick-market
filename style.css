@@ -327,7 +327,14 @@ img { max-width: 100%; }
 .reviews { padding: 8px 0 72px; scroll-margin-top: 72px; }
 .reviews .section-head { align-items: center; }
 .reviews-summary { margin: 0; color: var(--grey); font-size: .95rem; }
-.write-cta { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 4px 0 30px; text-align: center; }
+/* floating "write a review" button – top right of the screen */
+.write-float { position: fixed; top: 120px; right: 16px; z-index: 25; gap: 6px; }
+.write-float .write-circle { width: 76px; height: 76px; box-shadow: 0 8px 24px rgba(247,147,30,.35), 0 0 0 5px var(--orange-soft); }
+.write-float .write-emoji { font-size: 2.6rem; }
+.write-float .write-label { font-size: .85rem; background: var(--surface); border: 0; padding: 3px 10px; border-radius: 999px; box-shadow: var(--shadow); }
+/* keep the hero text clear of the floating button where the page is not much wider than the content */
+@media (min-width: 721px) and (max-width: 1400px) { .hero-text { padding-inline-start: 96px; } }
+.write-float:hover .write-circle { transform: translateY(-2px) scale(1.06); box-shadow: 0 12px 30px rgba(247,147,30,.45), 0 0 0 6px var(--orange-soft); }
 .write-btn { border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 4px; font: inherit; border-radius: 16px; }
 .write-circle {
   width: 108px; height: 108px; border-radius: 50%; display: grid; place-items: center;
@@ -341,7 +348,12 @@ img { max-width: 100%; }
 @keyframes scribble { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-10deg) translateX(-2px); } 75% { transform: rotate(8deg) translateX(2px); } }
 .write-label { font-size: 1.1rem; font-weight: 800; color: var(--ink); border-bottom: 2px solid var(--orange); padding-bottom: 2px; }
 .write-btn:hover .write-label { color: var(--orange-text); }
-@media (max-width: 720px) { .write-circle { width: 92px; height: 92px; } .write-emoji { font-size: 3rem; } }
+@media (max-width: 720px) {
+  .write-float { top: auto; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: 12px; }
+  .write-float .write-circle { width: 60px; height: 60px; }
+  .write-float .write-emoji { font-size: 2rem; }
+  .write-float .write-label { font-size: .75rem; }
+}
 .reviews-summary b { color: var(--ink); font-size: 1.15rem; }
 .stars-read { color: #e8a317; letter-spacing: 2px; font-size: 1.05rem; }
 .review-list { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); }
