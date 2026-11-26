@@ -132,6 +132,9 @@ async function loadData() {
   /* ---------- Products ---------- */
   const norm = (s) => String(s || "").toLowerCase().replace(/["'׳״]/g, "").trim();
 
+  // default order: random, picked once per visit so it stays steady while browsing
+  const shuffleRank = new Map(PRODUCTS.map((p) => [p.id, Math.random()]));
+
   function filtered() {
     const words = norm(state.q).split(/\s+/).filter(Boolean);
     const list = PRODUCTS.filter((p) => {
@@ -140,6 +143,7 @@ async function loadData() {
       const hay = norm(`${p.title} ${fullCatName(p.category)} ${badgesOf(p).join(" ")}`);
       return words.every((w) => hay.includes(w));
     });
+    if (state.sort === "") list.sort((a, b) => shuffleRank.get(a.id) - shuffleRank.get(b.id));
     if (state.sort === "asc") list.sort((a, b) => num(a.price) - num(b.price));
     if (state.sort === "desc") list.sort((a, b) => num(b.price) - num(a.price));
     if (state.sort === "sale") list.sort((a, b) => discount(b) - discount(a));
