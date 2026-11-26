@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
   <a class="skip-link" href="#main">דילוג לתוכן</a>
@@ -130,26 +130,6 @@
     </div>
   </section>
 
-  <section class="contact" id="contact">
-    <div class="wrap contact-inner">
-      <div class="contact-text">
-        <span class="eyebrow">בקשת מוצר</span>
-        <h2>לא מצאתם? אני אמצא לכם.</h2>
-        <p>ספרו לי מה אתם מחפשים – בגד, גאדג'ט, משהו לבית – ואחזור אליכם עם הדיל הכי שווה שמצאתי באלי אקספרס.</p>
-      </div>
-      <form class="panel" id="requestForm" novalidate>
-        <div class="two">
-          <input type="text" name="name" placeholder="שם" autocomplete="name" aria-label="שם">
-          <input type="email" name="email" placeholder="אימייל לחזרה" required autocomplete="email" aria-label="אימייל לחזרה">
-        </div>
-        <textarea name="request" rows="4" placeholder="איזה מוצר אתם מחפשים? (אפשר גם להדביק קישור או לתאר)" required aria-label="איזה מוצר אתם מחפשים"></textarea>
-        <button type="submit" class="btn btn-lg">שליחת בקשה</button>
-        <p class="form-note">הפרטים ישמשו רק כדי לחזור אליכם. <a href="privacy.html">מדיניות פרטיות</a></p>
-        <p class="form-msg" role="status"></p>
-      </form>
-    </div>
-  </section>
-
   </main>
 
   <footer class="site-footer">
@@ -167,7 +147,7 @@
   <div class="float-stack">
     <button type="button" class="write-btn write-float" id="qsOpen" aria-haspopup="dialog">
       <span class="write-circle" aria-hidden="true"><span class="write-emoji">💬</span></span>
-      <span class="write-label">חיפוש מוצר</span>
+      <span class="write-label">מחפשים משהו מסוים?</span>
     </button>
     <button type="button" class="write-btn write-float" id="reviewOpen" aria-haspopup="dialog">
       <span class="write-circle" aria-hidden="true"><span class="write-emoji">✍️</span></span>
@@ -180,7 +160,7 @@
   <dialog class="report qs" id="qsDlg" aria-labelledby="qsTitle">
     <div class="qs-inner">
       <div class="qs-head">
-        <h3 id="qsTitle">💬 מה אתם מחפשים?</h3>
+        <h3 id="qsTitle">💬 מחפשים משהו מסוים?</h3>
         <button type="button" class="qs-close" id="qsClose" aria-label="סגירה">✕</button>
       </div>
       <label class="search qs-search">
@@ -188,6 +168,19 @@
         <input type="search" id="qsInput" placeholder="למשל: תיק, אוזניות, שמלה…" autocomplete="off" aria-label="חיפוש מוצר" aria-controls="qsResults">
       </label>
       <div class="qs-results" id="qsResults" aria-live="polite"></div>
+
+      <form class="qs-request" id="requestForm" novalidate>
+        <h4>לא מצאתם? אני אמצא לכם 🔎</h4>
+        <p class="qs-hint">ספרו לי מה אתם מחפשים, ואחזור אליכם במייל עם הדיל הכי שווה שמצאתי באלי אקספרס.</p>
+        <div class="two">
+          <input type="text" name="name" placeholder="שם" autocomplete="name" aria-label="שם">
+          <input type="email" name="email" placeholder="אימייל לחזרה" required autocomplete="email" aria-label="אימייל לחזרה">
+        </div>
+        <textarea name="request" rows="3" placeholder="איזה מוצר אתם מחפשים? (אפשר גם להדביק קישור או לתאר)" required aria-label="איזה מוצר אתם מחפשים"></textarea>
+        <button type="submit" class="btn">שליחת בקשה</button>
+        <p class="form-note">הפרטים ישמשו רק כדי לחזור אליכם. <a href="privacy.html">מדיניות פרטיות</a></p>
+        <p class="form-msg" role="status"></p>
+      </form>
     </div>
   </dialog>
 
@@ -236,7 +229,7 @@
     </form>
   </dialog>
 
-  <script src="products.js?v=17"></script>
-  <script src="app.js?v=17"></script>
+  <script src="products.js?v=18"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>

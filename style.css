@@ -415,6 +415,23 @@ img { max-width: 100%; }
 .qs-price { font-weight: 800; }
 .qs-all { align-self: center; margin-top: 4px; }
 .qs-none { text-align: center; padding: 10px 0; }
+.qs-request {
+  display: flex; flex-direction: column; gap: 10px; margin-top: 6px; padding-top: 16px;
+  border-top: 1px dashed var(--grey-light); scroll-margin-top: 12px;
+}
+.qs-request h4 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+.qs-request .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qs-request input, .qs-request textarea {
+  font: inherit; min-width: 0; border: 1px solid var(--grey-light); border-radius: 12px; padding: 10px 12px;
+  outline: none; resize: vertical; background: var(--bg);
+}
+.qs-request input:focus, .qs-request textarea:focus { border-color: var(--orange); background: #fff; }
+.qs-request .btn { align-self: flex-start; }
+.qs-request .form-note { color: var(--grey); }
+.qs-request .form-note a { color: var(--blue-text); }
+.qs-request .form-msg.ok { color: #1e7a45; }
+.qs-request .form-msg.err { color: #c0392b; }
+@media (max-width: 480px) { .qs-request .two { grid-template-columns: 1fr; } }
 .qs-none p { margin: 0 0 12px; color: var(--grey); }
 
 /* ===== Coupons ===== */

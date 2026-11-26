@@ -515,7 +515,7 @@ async function loadData() {
       return words.every((w) => hay.includes(w));
     });
     if (!found.length) {
-      qsResults.innerHTML = `<div class="qs-none"><p>לא מצאנו "${esc(qsInput.value.trim())}" 🙁</p><a href="#contact" class="btn" data-close>שלחו בקשה ואמצא לכם</a></div>`;
+      qsResults.innerHTML = `<div class="qs-none"><p>לא מצאנו "${esc(qsInput.value.trim())}" 🙁</p><button type="button" class="btn" data-request>שלחו בקשה ואמצא לכם ↓</button></div>`;
       return;
     }
     qsResults.innerHTML =
@@ -531,15 +531,35 @@ async function loadData() {
   }
   let qsT;
   qsInput.addEventListener("input", () => { clearTimeout(qsT); qsT = setTimeout(quickSearch, 120); });
-  $("#qsOpen").addEventListener("click", () => {
+  function openQuickSearch(toRequest = false) {
     qsInput.value = "";
     quickSearch();
-    qsDlg.showModal();
-    qsInput.focus();
+    const msg = $("#requestForm .form-msg");
+    msg.textContent = "";
+    msg.className = "form-msg";
+    if (!qsDlg.open) qsDlg.showModal();
+    if (toRequest) goToRequest();
+    else qsInput.focus();
+  }
+  function goToRequest() {
+    const form = $("#requestForm");
+    const box = form.elements.request;
+    if (qsInput.value.trim() && !box.value.trim()) box.value = qsInput.value.trim();
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+    form.elements.name.focus({ preventScroll: true });
+  }
+  $("#qsOpen").addEventListener("click", () => openQuickSearch());
+  // every "request a product" link on the page opens this window at the request form
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest('a[href="#contact"]');
+    if (!link) return;
+    e.preventDefault();
+    openQuickSearch(true);
   });
   $("#qsClose").addEventListener("click", () => qsDlg.close());
   qsDlg.addEventListener("click", (e) => {
-    if (e.target === qsDlg || e.target.closest("[data-close]")) return qsDlg.close();
+    if (e.target === qsDlg) return qsDlg.close();
+    if (e.target.closest("[data-request]")) return goToRequest();
     const tag = e.target.closest(".qs-tag");
     if (tag) { qsInput.value = tag.dataset.q; quickSearch(); qsInput.focus(); return; }
     if (e.target.closest("#qsAll")) {
