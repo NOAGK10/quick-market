@@ -49,11 +49,13 @@ async function loadData() {
   const esc = (s = "") =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const num = (s) => parseFloat(String(s || "").replace(/[^\d.]/g, "")) || 0;
+  // a product can carry several tags; older products have a single "badge"
+  const badgesOf = (p) => (Array.isArray(p.badges) ? p.badges : p.badge ? [p.badge] : []).filter(Boolean);
   const discount = (p) => {
     const now = num(p.price), was = num(p.oldPrice);
     return was > now && now > 0 ? Math.round((1 - now / was) * 100) : 0;
   };
-  const BADGE_CLASS = { "מומלץ": "rec", "להיט": "hot", "רב מכר": "best", "חדש": "new", "מבצע": "sale" };
+  const BADGE_CLASS = { "מומלץ": "rec", "ממליצים ישראלים": "il", "להיט": "hot", "רב מכר": "best", "חדש": "new", "מבצע": "sale" };
 
   const PLACEHOLDER =
     "data:image/svg+xml;utf8," +
@@ -135,7 +137,7 @@ async function loadData() {
     const list = PRODUCTS.filter((p) => {
       if (state.cat !== "all" && !inCat(p, state.cat)) return false;
       if (!words.length) return true;
-      const hay = norm(`${p.title} ${fullCatName(p.category)} ${p.badge || ""}`);
+      const hay = norm(`${p.title} ${fullCatName(p.category)} ${badgesOf(p).join(" ")}`);
       return words.every((w) => hay.includes(w));
     });
     if (state.sort === "asc") list.sort((a, b) => num(a.price) - num(b.price));
@@ -146,7 +148,7 @@ async function loadData() {
 
   function cardHTML(p, i) {
     const off = discount(p);
-    const badge = p.badge ? `<span class="badge ${BADGE_CLASS[p.badge] || "sale"}">${esc(p.badge)}</span>` : "<span></span>";
+    const badge = `<div class="badge-col">${badgesOf(p).map((b) => `<span class="badge ${BADGE_CLASS[b] || "sale"}">${esc(b)}</span>`).join("")}</div>`;
     const offTag = off ? `<span class="badge off">‎-${off}%</span>` : "";
     const imgs = imagesOf(p);
     const many = imgs.length > 1;
@@ -511,7 +513,7 @@ async function loadData() {
       return;
     }
     const found = PRODUCTS.filter((p) => {
-      const hay = norm(`${p.title} ${fullCatName(p.category)} ${p.badge || ""}`);
+      const hay = norm(`${p.title} ${fullCatName(p.category)} ${badgesOf(p).join(" ")}`);
       return words.every((w) => hay.includes(w));
     });
     if (!found.length) {

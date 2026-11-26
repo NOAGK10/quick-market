@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="icon" href="img/favicon.png">
-  <link rel="stylesheet" href="style.css?v=18">
+  <link rel="stylesheet" href="style.css?v=20">
   <style>
     body { background: var(--bg); }
     .admin { padding: 28px 16px 80px; display: grid; gap: 20px; }
@@ -97,6 +97,12 @@
     .vitem .b { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
     .subh { margin: 18px 0 8px; font-size: .95rem; font-weight: 700; color: var(--grey); }
     @media (max-width: 600px) { .vitem { grid-template-columns: 1fr; } .vitem .b { justify-content: flex-start; } }
+    .tag-picks { border: 0; margin: 0; padding: 0; grid-column: 1 / -1; }
+    .tag-picks legend { padding: 0; margin-bottom: 6px; }
+    .tag-picks > div { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-picks label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--ink); background: var(--bg); border: 1px solid var(--grey-light); border-radius: 999px; padding: 6px 12px; font-size: .9rem; }
+    .tag-picks label:has(input:checked) { border-color: var(--orange); background: var(--orange-soft); font-weight: 700; }
+    .tag-picks input { accent-color: var(--orange); margin: 0; }
     .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
     .toast.show { opacity: 1; }
     @media (max-width: 600px) {
@@ -166,7 +172,9 @@
         <label class="f">קטגוריה *<select name="category" id="pCat" required></select></label>
         <label class="f">מחיר *<input name="price" placeholder="₪39" required></label>
         <label class="f">מחיר לפני הנחה (לא חובה)<input name="oldPrice" placeholder="₪69"></label>
-        <label class="f">תגית (לא חובה)<select name="badge"><option value="">ללא</option><option>מומלץ</option><option>להיט</option><option>רב מכר</option><option>חדש</option><option>מבצע</option></select></label>
+        <fieldset class="f tag-picks"><legend>תגיות (אפשר לסמן כמה)</legend>
+          <div><label><input type="checkbox" name="badges" value="מומלץ"> מומלץ</label><label><input type="checkbox" name="badges" value="ממליצים ישראלים"> ממליצים ישראלים</label><label><input type="checkbox" name="badges" value="להיט"> להיט</label><label><input type="checkbox" name="badges" value="רב מכר"> רב מכר</label><label><input type="checkbox" name="badges" value="חדש"> חדש</label><label><input type="checkbox" name="badges" value="מבצע"> מבצע</label></div>
+        </fieldset>
       </div>
       <div class="row" style="margin-top:12px">
         <label class="f">קישור למוצר (קישור שותפים) *<input name="link" type="url" required placeholder="https://s.click.aliexpress.com/..." dir="ltr"></label>
@@ -246,7 +254,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="products.js?v=18"></script>
+  <script src="products.js?v=20"></script>
   <script>
   (() => {
     const $ = (s) => document.querySelector(s);
@@ -378,7 +386,7 @@
       $("#plist").innerHTML = list.map((p) => `
         <div class="pitem">
           <img src="${esc(imagesOf(p)[0] || "")}" alt="">
-          <div><div class="t">${esc(p.title)}${imagesOf(p).length > 1 ? ` <small style="color:var(--grey)">(${imagesOf(p).length} תמונות)</small>` : ""}</div><div class="s">${esc(catName(p.category))}${p.price ? " · " + esc(p.price) : ""}${p.oldPrice ? " (במקום " + esc(p.oldPrice) + ")" : ""}${p.badge ? " · " + esc(p.badge) : ""} · <span dir="ltr">${esc(p.link)}</span></div></div>
+          <div><div class="t">${esc(p.title)}${imagesOf(p).length > 1 ? ` <small style="color:var(--grey)">(${imagesOf(p).length} תמונות)</small>` : ""}</div><div class="s">${esc(catName(p.category))}${p.price ? " · " + esc(p.price) : ""}${p.oldPrice ? " (במקום " + esc(p.oldPrice) + ")" : ""}${(Array.isArray(p.badges) ? p.badges : p.badge ? [p.badge] : []).map((b) => " · " + esc(b)).join("")} · <span dir="ltr">${esc(p.link)}</span></div></div>
           <div class="b">
             <button class="btn ghost small" data-up="${p.id}" title="הזזה למעלה">↑</button>
             <button class="btn ghost small" data-edit="${p.id}">עריכה</button>
@@ -474,7 +482,8 @@
       const f = Object.fromEntries(new FormData(pForm));
       if ($("#imgUrl").value.trim()) addImageUrl(); // a link that was typed but not added yet
       if (!formImages.length) { toast("חסרה תמונה – הוסיפו קישור או העלו מהמחשב"); return; }
-      const item = { title: f.title.trim(), category: f.category, price: f.price.trim(), oldPrice: f.oldPrice.trim(), badge: f.badge, link: f.link.trim(), image: formImages[0], images: [...formImages] };
+      const item = { title: f.title.trim(), category: f.category, price: f.price.trim(), oldPrice: f.oldPrice.trim(), badges: new FormData(pForm).getAll("badges"), link: f.link.trim(), image: formImages[0], images: [...formImages] };
+      item.badge = item.badges[0] || "";
       if (editingId) {
         Object.assign(data.products.find((p) => p.id === editingId), item);
         toast("המוצר עודכן ✓");
@@ -498,7 +507,8 @@
         [data.products[i - 1], data.products[i]] = [data.products[i], data.products[i - 1]]; save(); renderList();
       } else {
         editingId = p.id;
-        pForm.elements.title.value = p.title; pForm.elements.category.value = p.category; pForm.elements.price.value = p.price || ""; pForm.elements.oldPrice.value = p.oldPrice || ""; pForm.elements.badge.value = p.badge || "";
+        pForm.elements.title.value = p.title; pForm.elements.category.value = p.category; pForm.elements.price.value = p.price || ""; pForm.elements.oldPrice.value = p.oldPrice || ""; const tags = Array.isArray(p.badges) ? p.badges : p.badge ? [p.badge] : [];
+        pForm.querySelectorAll('input[name="badges"]').forEach((cb) => (cb.checked = tags.includes(cb.value)));
         pForm.elements.link.value = p.link; formImages = imagesOf(p); renderImgs();
         $("#pFormTitle").textContent = "עריכת מוצר"; $("#pSubmit").textContent = "שמירת שינויים"; $("#pCancel").hidden = false;
         pForm.scrollIntoView({ behavior: "smooth" });
